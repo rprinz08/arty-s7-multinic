@@ -1,0 +1,13 @@
+*.o
+*.d
+*.bin
+*.elf
+*.fbi
+.Xil
+*.jou
+*.log
+__pycache__
+*.pyc
+*.vcd
+build
+
