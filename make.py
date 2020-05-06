@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from os import path
+import os
 import argparse
 import logging
 
@@ -13,7 +13,8 @@ from source.top import *
 def build(args):
     """ Convert migen to HDL and optionally build bitsreami and BIOS """
     soc = BaseSoC(**soc_sdram_argdict(args))
-    builder = Builder(soc, **builder_argdict(args))
+    # use minimal bios terminal otherwise bios would not fit in ROM
+    builder = Builder(soc, **builder_argdict(args), bios_options = ["TERM_MINI"])
 
     print("*** BUILDING BITSTREAM")
     builder.build(**vivado_build_argdict(args))
@@ -32,7 +33,7 @@ def load(args):
     # platform in top.py
     #soc.platform.programmer = 'xc3sprog'
 
-    bitstream = path.join(builder.gateware_dir, 'top.bit')
+    bitstream = os.path.join(builder.gateware_dir, 'top.bit')
 
     print("*** LOADING BITSTREAM (%s) INTO FPGA" % bitstream)
     prog = soc.platform.create_programmer()
@@ -50,7 +51,7 @@ def flash(args):
     # includes everything needed. When using xc3sprog an additional flash
     # proxy is needed. See additional comments in arty_s7.py
     #soc.platform.programmer = 'vivado'
-    bitstream = path.join(builder.gateware_dir, 'top.bin')
+    bitstream = os.path.join(builder.gateware_dir, 'top.bin')
 
     print("*** FLASHING BITSTREAM (%s) TO FPGA FLASH" % bitstream)
     prog = soc.platform.create_programmer()

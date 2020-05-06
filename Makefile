@@ -6,8 +6,8 @@ FIRMWARE_PATH=./source/firmware
 FIRMWARE=$(FIRMWARE_PATH)/firmware.bin
 IDENTIFIER="Arty-S7 RISC64 v1.0"
 IDENTIFIER_VER=true
-DEV = "/dev/ttyUSB2"
-UART_BAUD=9600
+DEV = "/dev/ttyUSB0"
+UART_BAUD=115200
 
 $(BITSTREAM): source/*.py
 	@./make.py build \

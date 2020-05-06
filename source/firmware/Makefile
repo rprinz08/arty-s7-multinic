@@ -5,15 +5,15 @@ BUILD_DIRECTORY = $(BUILDINC_DIRECTORY)/..
 FIRMWARE_DIRECTORY=$(BUILD_DIRECTORY)/../../source/firmware
 
 ifeq ($(COPY_TO_MAIN_RAM), 1)
-CRT0 = $(BUILD_DIRECTORY)/libbase/crt0-$(CPU)-ctr.o
+CRT0 = $(BUILD_DIRECTORY)/libbase/crt0-ctr.o
 LINKER_LD = linker-ctr.ld
 else
-CRT0 = $(BUILD_DIRECTORY)/libbase/crt0-$(CPU)-xip.o
+CRT0 = $(BUILD_DIRECTORY)/libbase/crt0-xip.o
 LINKER_LD = linker-xip.ld
 endif
 
 OBJECTS = \
-	boot-helper-$(CPU).o \
+	boot-helper.o \
 	main.o \
 	isr.o \
 	uptime.o \
@@ -62,10 +62,7 @@ firmware.elf: $(FIRMWARE_DIRECTORY)/$(LINKER_LD) $(OBJECTS)
 # pull in dependency info for *existing* .o files
 -include $(OBJECTS:.o=.d)
 
-boot-helper-$(CPU).S: $(BIOS_DIRECTORY)/boot-helper-$(CPU).S
-	cp $< $@
-
-boot-helper-$(CPU).o: boot-helper-$(CPU).S
+boot-helper.o: $(CPU_DIRECTORY)/boot-helper.S
 	$(assemble)
 
 %.o: $(FIRMWARE_DIRECTORY)/%.c
