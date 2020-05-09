@@ -222,11 +222,11 @@ They can be found on github:
 * [Reset patch](https://github.com/rprinz08/liteeth/commit/6ac06a8423d326f111316909a07afba65db71fe0)
 * [Multy RMII PHY patch](https://github.com/rprinz08/liteeth/commit/ed355c5aae09e2234098910da4ee220956210371)
 
-*Load the firmware from flash*
+Loading FPGA bitstream and firmware from flash.
 
 To load the firmware from SPI flash another patch was necessary. The standard
 LiteX BIOS tries to load the firmware from flash address 0 which is already
-used for the FPGA bitstream. The patch allows to specify from which addres
+used for the FPGA bitstream. The patch allows to specify an address offset from where
 the BIOS tries to load the firmware. In this project the first 8MB flash are
 reserved for the FPGA bitstream and the second 8MB for the firmware.
 * [Load firmware from flash patch](https://github.com/rprinz08/litex/commit/ea232fc53aaefc822a3a073c88e48243b2cf7e48)
