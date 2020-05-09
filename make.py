@@ -25,14 +25,7 @@ def load(args):
     """ Temporarily load bitsream into device """
     logging.disable(level=logging.CRITICAL)
     soc = BaseSoC(**soc_sdram_argdict(args))
-    builder = Builder(soc, **builder_argdict(args))
-
-    # Using xc3sprog is faster than using Vivado to load a bitstream to FPGA.
-    # So use xc3sprog for loading and Vivado for flashing.
-    # Uncomment next line to use xc3sprog for loading or change
-    # platform in top.py
-    #soc.platform.programmer = 'xc3sprog'
-
+    builder = Builder(soc, **builder_argdict(args), bios_options = ["TERM_MINI"])
     bitstream = os.path.join(builder.gateware_dir, 'top.bit')
 
     print("*** LOADING BITSTREAM (%s) INTO FPGA" % bitstream)
@@ -45,12 +38,7 @@ def flash(args):
     """ Permanent program bitstream into configuration flash """
     logging.disable(level=logging.CRITICAL)
     soc = BaseSoC(**soc_sdram_argdict(args))
-    builder = Builder(soc, **builder_argdict(args))
-
-    # To flash a bitstream permanently to config flash, use Vivado as it
-    # includes everything needed. When using xc3sprog an additional flash
-    # proxy is needed. See additional comments in arty_s7.py
-    #soc.platform.programmer = 'vivado'
+    builder = Builder(soc, **builder_argdict(args), bios_options = ["TERM_MINI"])
     bitstream = os.path.join(builder.gateware_dir, 'top.bin')
 
     print("*** FLASHING BITSTREAM (%s) TO FPGA FLASH" % bitstream)
@@ -59,35 +47,68 @@ def flash(args):
     print("*** FLASH DONE")
 
 
+def flash_sw(args):
+    logging.disable(level=logging.CRITICAL)
+    soc = BaseSoC(**soc_sdram_argdict(args))
+    builder = Builder(soc, **builder_argdict(args), bios_options = ["TERM_MINI"])
+
+    base = 0x800_000
+    firmware = args.firmware
+    print("Flashing {} at 0x{:08x}".format(firmware, base))
+    prog = builder.soc.platform.create_programmer()
+    prog.flash(base, firmware)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="LiteX SoC make")
     parser.add_argument('command', nargs=1, help='Command to perform',
-                        choices=['build', 'conv', 'load',
-                                 'flash'],
+                        choices=['build', 'build-sw', 'build-fpga',
+                                 'conv',
+                                 'load', 'flash', 'flash-sw'],
                         default='build')
     builder_args(parser)
 
-    if 'build' in sys.argv:
+    if any(a in sys.argv for a in [
+            'build', 'build-sw', 'build-fpga',
+            'flash', 'flash-sw',
+            'conv']):
         soc_sdram_args(parser) # includes soc_core_args
         vivado_build_args(parser)
+
+    if 'build-sw' in sys.argv:
+        while '--no-compile-software' in sys.argv:
+            sys.argv.remove('--no-compile-software')
+        if not '--no-compile-gateware' in sys.argv:
+            sys.argv.append('--no-compile-gateware')
+
+    elif 'build-fpga' in sys.argv:
+        vivado_build_args(parser)
+        while '--no-compile-gateware' in sys.argv:
+            sys.argv.remove('--no-compile-gateware')
+        if not '--no-compile-software' in sys.argv:
+            sys.argv.append('--no-compile-software')
+
     elif 'conv' in sys.argv:
-        soc_sdram_args(parser)
         vivado_build_args(parser)
         if not '--no-compile-software' in sys.argv:
             sys.argv.append('--no-compile-software')
         if not '--no-compile-gateware' in sys.argv:
             sys.argv.append('--no-compile-gateware')
 
+    elif 'flash-sw' in sys.argv:
+        parser.add_argument("--firmware", default=None,
+            help="Firmware to flash (fbi format)")
+
     args = parser.parse_args()
 
-    if args.command[0] == 'build':
-        build(args)
-    elif args.command[0] == 'conv':
+    if args.command[0] in ['build', 'build-sw', 'build-fpga', 'conv']:
         build(args)
     elif args.command[0] == 'load':
         load(args)
     elif args.command[0] == 'flash':
         flash(args)
+    elif args.command[0] == 'flash-sw':
+        flash_sw(args)
     else:
         parser.print_help()
 

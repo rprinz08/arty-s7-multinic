@@ -27,7 +27,7 @@ from source.hello import Hello
 from source.display import Disp7_stub
 
 # Platform---------------------------------------------------------------------
-Platform = arty_s7.Platform(programmer='vivado')
+Platform = arty_s7.Platform(programmer='openocd')
 
 # CRG -------------------------------------------------------------------------
 class _CRG(Module):
@@ -74,6 +74,10 @@ class BaseSoC(SoCCore):
         # CRG -----------------------------------------------------------------
         self.submodules.crg = _CRG(self.platform, sys_clk_freq)
 
+        self.mem_map = {**self.mem_map, **{
+            "spiflash": 0xd0000000
+        }}
+
         # DDR3 SDRAM ----------------------------------------------------------
         if not self.integrated_main_ram_size:
             self.submodules.ddrphy = s7ddrphy.A7DDRPHY(self.platform.request("ddram"),
@@ -91,6 +95,21 @@ class BaseSoC(SoCCore):
                 l2_cache_min_data_width = kwargs.get("min_l2_data_width", 128),
                 l2_cache_reverse        = True
             )
+
+        # SPI Flash -----------------------------------------------------------
+        SPIFLASH_PAGE_SIZE    = 256
+        SPIFLASH_SECTOR_SIZE  = 64 * 1024
+        SPIFLASH_DUMMY_CYCLES = 11
+
+        self.add_spi_flash(dummy_cycles=SPIFLASH_DUMMY_CYCLES)
+
+        self.add_constant("SPIFLASH_PAGE_SIZE", SPIFLASH_PAGE_SIZE)
+        self.add_constant("SPIFLASH_SECTOR_SIZE", SPIFLASH_SECTOR_SIZE)
+        self.add_constant("FLASH_BOOT_ADDRESS", self.mem_map["spiflash"])
+        # Place firmware in second half of 16MB flash. first half is used
+        # for FPGA bitstream. For this to work a patched LiteX BIOS version
+        # is needed. See: https://github.com/rprinz08/litex
+        self.add_constant("FLASH_BOOT_OFFSET", 0x800000)
 
         # SPI SD-Card ---------------------------------------------------------
         self.add_spi_sdcard(name="spisdcard", clk_freq=400e3)
@@ -125,13 +144,19 @@ class BaseSoC(SoCCore):
         self.add_constant("REMOTEIP3", 0)
         self.add_constant("REMOTEIP4", 100)
 
-        # Ethernet interface 0 (used for TFTP boot)
-        self.submodules.ethphy = LiteEthPHYRMII(
+        # Ethernet interface 0
+        # Naming this 'ethphy' and 'ethmac' enables BIOS TFTP boot
+        # functionality. This is disabled here by naming it 'ethphy0' and
+        # 'ethmac0' as BIOS size wont fit into bitstream ROM. If you want
+        # this functionality disable other functions like booting from
+        # SD card
+        self.submodules.ethphy0 = LiteEthPHYRMII(
             clock_pads = self.platform.request("eth0_clocks"),
             pads       = self.platform.request("eth0"),
+            name="ethphy0",
             with_hw_init_reset=True, cd_name="eth0")
-        self.add_csr("ethphy")
-        self.add_ethernet(phy=self.ethphy)
+        self.add_csr("ethphy0")
+        self.add_ethernet(name="ethmac0", phy=self.ethphy0)
 
         # Ethernet interface 1
         self.submodules.ethphy1 = LiteEthPHYRMII(

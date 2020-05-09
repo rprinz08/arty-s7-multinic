@@ -23,21 +23,25 @@ application you need some prerequisites installed:
 * [Python >= 3.6](https://www.python.org/)
 * [LiteX](https://github.com/enjoy-digital/litex)
 * [RiscV compiler toolchain](https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.1.0-2019.01.0-x86_64-linux-ubuntu14.tar.gz)
-* [xc3sprog](https://sourceforge.net/projects/xc3sprog/)
+* [OpenOCD](http://openocd.org/)
+* [xc3sprog](https://sourceforge.net/projects/xc3sprog/) (optional)
 
 ## Building
 The included `make.py` script is responsible for building and loading/flashing.
 In addition a `Makefile` is used to handle dependencies and file changes.
 Assuming that all prerequisites are correctly installed using make:
 ```
-make                Builds FPGA bitstream
+make                Builds FPGA bitstream and BIOS software
+make build-sw		Builds BIOS
+make build-fpga		Builds FPGA bitstream
 make conv           Convert Python FHDL to Verilog
 make load           Loads bitstream into FPGA via serial port
+make load-sw        Loads firmware binary using serial port
 make reload         Same as "load" but does not rebuild in case of changes
 make flash          Stores bitstream into FPGA boot flash
+make flash-sw		Flash BIOS software
 make reflash        Same as "flash" but does not rebuild in case of changes
 make term           Opens LiteX serial lxterm console
-make load-sw        Loads firmware binary using serial port
 make clean          Cleans/removes all build artefacts
 ```
 The `make.py` script is called from make (Makefile) and provides the following:
@@ -45,8 +49,11 @@ The `make.py` script is called from make (Makefile) and provides the following:
 make.py --help      shows basic help
 make.py build       converts LiteX/Migen FHDL into verilog,
                     starts Xilinx Vivado and generates FPGA bitstream
+make.py build-sw	same as 'build' but only builds BIOS
+make.py build-fpga	same as 'build' but only builds FPGA bitstream
 make.py load        loads the bitstream into FPGA
 make.py flash       flashes the bitstream into config flash
+make.py flash-sw    flashes the BIOS into config flash
 make.py conv        creates all artefacts (verilog, c sources etc.)
                     but does not compile
 ```
@@ -67,8 +74,14 @@ Place `firmware.bin` renamed to `BOOT.BIN` in the root directory of the TFTP
 server.
 
 ## Running
-Build and flash the bitstream. Place `boot.bin` for example on the SD-Card and
-reset the board. On an attached serial terminal you should see the following
+Build and flash the project:
+```
+make
+make flash
+```
+To boot from SD-Card place `firmware.bin` renamed to `BOOT.BIN` on SD-Card and reset the board. To boot from SPI flash, flash with `make 
+flash-sw`.
+On an attached serial terminal you should see the following
 output:
 ```
 [LXTERM] Starting...
@@ -209,7 +222,16 @@ They can be found on github:
 * [Reset patch](https://github.com/rprinz08/liteeth/commit/6ac06a8423d326f111316909a07afba65db71fe0)
 * [Multy RMII PHY patch](https://github.com/rprinz08/liteeth/commit/ed355c5aae09e2234098910da4ee220956210371)
 
-* Also `xc3sprog` did not support the Xilinx Spartan-7 chip used on the
+*Load the firmware from flash*
+
+To load the firmware from SPI flash another patch was necessary. The standard
+LiteX BIOS tries to load the firmware from flash address 0 which is already
+used for the FPGA bitstream. The patch allows to specify from which addres
+the BIOS tries to load the firmware. In this project the first 8MB flash are
+reserved for the FPGA bitstream and the second 8MB for the firmware.
+* [Load firmware from flash patch](https://github.com/rprinz08/litex/commit/ea232fc53aaefc822a3a073c88e48243b2cf7e48)
+
+Also `xc3sprog` did not support the Xilinx Spartan-7 chip used on the
 Arty-S7-50. For this to work another patch was developed. Simple get the source
 from [here](https://sourceforge.net/projects/xc3sprog/) and add the following line
 to the file `devlist.txt`:
@@ -217,6 +239,8 @@ to the file `devlist.txt`:
 0362f093      6    0x09 XC7S50
 ```
 Then rebuild `xc3sprog` which now can be used to program the Arty-S7-50.
+
+**Note: the project now uses [OpenOCD](http://openocd.org/) for programming.**
 
 More infos about this project can be found on the
 [accompanying blog post](https://www.min.at/prinz/?x=entry:entry200428-150015).

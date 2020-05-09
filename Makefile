@@ -4,8 +4,10 @@ SOFTWARE_PATH=$(BUILD_PATH)/software
 BITSTREAM=$(GATEWARE_PATH)/top.bin
 FIRMWARE_PATH=./source/firmware
 FIRMWARE=$(FIRMWARE_PATH)/firmware.bin
+FIRMWARE_FBI=$(FIRMWARE_PATH)/firmware.fbi
 IDENTIFIER="Arty-S7 RISC64 v1.0"
 IDENTIFIER_VER=true
+CSR_JSON=$(BUILD_PATH)/csr.json
 DEV = "/dev/ttyUSB0"
 UART_BAUD=115200
 
@@ -16,7 +18,26 @@ $(BITSTREAM): source/*.py
 		--software-dir $(SOFTWARE_PATH) \
 		--ident $(IDENTIFIER) \
 		--ident-version $(IDENTIFIER_VER) \
-		--uart-baudrate $(UART_BAUD)
+		--uart-baudrate $(UART_BAUD) \
+		--csr-json $(CSR_JSON)
+
+build-sw:
+	@./make.py build-sw \
+		--output-dir $(BUILD_PATH) \
+		--gateware-dir $(GATEWARE_PATH) \
+		--software-dir $(SOFTWARE_PATH) \
+		--ident $(IDENTIFIER) \
+		--ident-version $(IDENTIFIER_VER) \
+		--csr-json $(CSR_JSON)
+
+build-fpga:
+	@./make.py build-sw \
+		--output-dir $(BUILD_PATH) \
+		--gateware-dir $(GATEWARE_PATH) \
+		--software-dir $(SOFTWARE_PATH) \
+		--ident $(IDENTIFIER) \
+		--ident-version $(IDENTIFIER_VER) \
+		--csr-json $(CSR_JSON)
 
 conv:
 	@./make.py conv \
@@ -24,7 +45,8 @@ conv:
 		--gateware-dir $(GATEWARE_PATH) \
 		--software-dir $(SOFTWARE_PATH) \
 		--ident $(IDENTIFIER) \
-		--ident-version $(IDENTIFIER_VER)
+		--ident-version $(IDENTIFIER_VER) \
+		--csr-json $(CSR_JSON)
 
 load: $(BITSTREAM)
 	@./make.py load \
@@ -53,6 +75,10 @@ reflash:
 		--output-dir $(BUILD_PATH) \
 		--gateware-dir $(GATEWARE_PATH) \
 		--software-dir $(SOFTWARE_PATH)
+
+flash-sw:
+	@./make.py flash-sw \
+		--firmware=$(FIRMWARE_FBI)
 
 term:
 	@litex_term --speed $(UART_BAUD) $(DEV)
@@ -85,5 +111,5 @@ clean:
 	rm -f vivado.jou
 	rm -frd .Xil
 
-.PHONY: clean load reload flash reflash conv term sdcard-init sdcard
+.PHONY: clean load load-sw reload flash flash-sw reflash conv term sdcard-init sdcard
 

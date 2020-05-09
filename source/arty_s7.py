@@ -3,6 +3,7 @@
 
 from litex.build.generic_platform import *
 from litex.build.xilinx import XilinxPlatform, XC3SProg, VivadoProgrammer
+from litex.build.openocd import OpenOCD
 
 # IOs ----------------------------------------------------------------------------------------------
 
@@ -48,13 +49,14 @@ _io = [
         Subsignal("rx", Pins("V12")),
         IOStandard("LVCMOS33")),
 
-    ("spi", 0,
-        Subsignal("clk", Pins("G16")),
-        Subsignal("cs_n", Pins("H16")), # SS
-        Subsignal("mosi", Pins("H17")),
-        Subsignal("miso", Pins("K14")),
-        IOStandard("LVCMOS33")
-    ),
+    # Unavailable; used for Ethernet
+    #("spi", 0,
+    #    Subsignal("clk", Pins("G16")),
+    #    Subsignal("cs_n", Pins("H16")), # SS
+    #    Subsignal("mosi", Pins("H17")),
+    #    Subsignal("miso", Pins("K14")),
+    #    IOStandard("LVCMOS33")
+    #),
 
     # When using an Arduino Wireless SD shield
     # https://store.arduino.cc/arduino-wireless-sd-shield
@@ -271,7 +273,7 @@ class Platform(XilinxPlatform):
             #    "~/.migen", "/usr/local/share/migen", "/usr/share/migen",
             #    "~/.mlabs", "/usr/local/share/mlabs", "/usr/share/mlabs",
             #    "~/.litex", "/usr/local/share/litex", "/usr/share/litex"
-            programmer.set_flash_proxy_dir("../../../../bin/bscan")
+            programmer.set_flash_proxy_dir("prog")
             return programmer
 
         # For Xilinx Vivado programmer
@@ -280,6 +282,15 @@ class Platform(XilinxPlatform):
         # exact part used in the Arty-S7 Rev. E
         elif self.programmer == "vivado":
             return VivadoProgrammer(flash_part="mt25ql128-spi-x1_x2_x4")
+
+        # For OpenOCD
+        elif self.programmer == "openocd":
+            bscan_spi = "bscan_spi_xc7s50.bit" \
+                    if "xc7s50" in self.device \
+                    else "bscan_spi_xc7a25.bit"
+            programmer = OpenOCD("openocd_xilinx.cfg", bscan_spi)
+            programmer.set_flash_proxy_dir("prog")
+            return programmer
 
         else:
             raise ValueError("{} programmer is not supported"
