@@ -73,15 +73,18 @@ with IP4 address **10.0.0.50** and tries to load from TFTP server with address
 Place `firmware.bin` renamed to `BOOT.BIN` in the root directory of the TFTP
 server.
 
+To preserve the limited I/Os of the Arty the SD-Card can be removed and the firmware booted from the SPI flash. The Arty has 16MB SPI flash normally used to configure the FPGA with a bitstream at boot.
+As lang as bitstream size + firmware size < 15MB they can reside together in the flash. Current configuration halfs the flash. First half used for the bitsream second half for the firmware. The `make flash-sw` writes the `firmware.fbi` to flash adress 0x800000.
+
 ## Running
-Build and flash the project:
+Build and flash the FPGA bitstream:
 ```
 make
 make flash
 ```
-To boot from SD-Card place `firmware.bin` renamed to `BOOT.BIN` on SD-Card and reset the board. To boot from SPI flash, flash with `make 
+To boot from SD-Card place `firmware.bin` renamed to `BOOT.BIN` on SD-Card and reset the board. To boot from SPI flash, flash with `make
 flash-sw`.
-On an attached serial terminal you should see the following
+On an attached serial terminal (open one with `make term`) you should see the following
 output:
 ```
 [LXTERM] Starting...
@@ -221,15 +224,6 @@ Two simple patches to `liteeth/phy/rmii.py` and `liteeth/mac/core.phy` fixed thi
 They can be found on github:
 * [Reset patch](https://github.com/rprinz08/liteeth/commit/6ac06a8423d326f111316909a07afba65db71fe0)
 * [Multy RMII PHY patch](https://github.com/rprinz08/liteeth/commit/ed355c5aae09e2234098910da4ee220956210371)
-
-Loading FPGA bitstream and firmware from flash.
-
-To load the firmware from SPI flash another patch was necessary. The standard
-LiteX BIOS tries to load the firmware from flash address 0 which is already
-used for the FPGA bitstream. The patch allows to specify an address offset from where
-the BIOS tries to load the firmware. In this project the first 8MB flash are
-reserved for the FPGA bitstream and the second 8MB for the firmware.
-* [Load firmware from flash patch](https://github.com/rprinz08/litex/commit/ea232fc53aaefc822a3a073c88e48243b2cf7e48)
 
 Also `xc3sprog` did not support the Xilinx Spartan-7 chip used on the
 Arty-S7-50. For this to work another patch was developed. Simple get the source

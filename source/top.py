@@ -105,11 +105,9 @@ class BaseSoC(SoCCore):
 
         self.add_constant("SPIFLASH_PAGE_SIZE", SPIFLASH_PAGE_SIZE)
         self.add_constant("SPIFLASH_SECTOR_SIZE", SPIFLASH_SECTOR_SIZE)
-        self.add_constant("FLASH_BOOT_ADDRESS", self.mem_map["spiflash"])
-        # Place firmware in second half of 16MB flash. first half is used
-        # for FPGA bitstream. For this to work a patched LiteX BIOS version
-        # is needed. See: https://github.com/rprinz08/litex
-        self.add_constant("FLASH_BOOT_OFFSET", 0x800000)
+        # Place firmware in second half of 16MB SPI flash. First half is
+        # used for FPGA bitstream
+        self.add_constant("FLASH_BOOT_ADDRESS", self.mem_map["spiflash"] + 0x800000)
 
         # SPI SD-Card ---------------------------------------------------------
         self.add_spi_sdcard(name="spisdcard", clk_freq=400e3)
