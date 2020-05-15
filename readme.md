@@ -6,6 +6,7 @@ Python based Migen HDL.
 ![](doc/fpga_net_1_l.jpg)
 
 ![](doc/fpga_net_sch_1_l.jpg)
+Download schematic as [PDF](doc/fpga_net_sch.pdf).
 
 It uses two [Texas Instruments DP83848](http://www.ti.com/product/DP83848-EP)
 based RMII Ethernet PHYs from [Waveshare](https://www.waveshare.com/dp83848-ethernet-board.htm).
@@ -73,8 +74,13 @@ with IP4 address **10.0.0.50** and tries to load from TFTP server with address
 Place `firmware.bin` renamed to `BOOT.BIN` in the root directory of the TFTP
 server.
 
-To preserve the limited I/Os of the Arty the SD-Card can be removed and the firmware booted from the SPI flash. The Arty has 16MB SPI flash normally used to configure the FPGA with a bitstream at boot.
-As lang as bitstream size + firmware size < 15MB they can reside together in the flash. Current configuration halfs the flash. First half used for the bitsream second half for the firmware. The `make flash-sw` writes the `firmware.fbi` to flash adress 0x800000.
+To preserve the limited I/Os of the Arty the SD-Card can be removed and the
+firmware booted from the SPI flash. The Arty has 16MB SPI flash normally used
+to configure the FPGA with a bitstream at boot.
+As lang as bitstream size + firmware size < 15MB they can reside together in
+the flash. Current configuration halfs the flash. First half used for the
+bitsream second half for the firmware. The `make flash-sw` writes the
+`firmware.fbi` to flash adress 0x800000.
 
 ## Running
 Build and flash the FPGA bitstream:
@@ -82,10 +88,10 @@ Build and flash the FPGA bitstream:
 make
 make flash
 ```
-To boot from SD-Card place `firmware.bin` renamed to `BOOT.BIN` on SD-Card and reset the board. To boot from SPI flash, flash with `make
-flash-sw`.
-On an attached serial terminal (open one with `make term`) you should see the following
-output:
+To boot from SD-Card place `firmware.bin` renamed to `BOOT.BIN` on SD-Card and
+reset the board. To boot from SPI flash, flash with `make flash-sw`.
+On an attached serial terminal (open one with `make term`) you should see the
+following output:
 ```
 [LXTERM] Starting...
         __   _ __      _  __
