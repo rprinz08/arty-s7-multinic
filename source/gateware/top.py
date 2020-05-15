@@ -37,8 +37,7 @@ class _CRG(Module):
         self.clock_domains.cd_sys4x     = ClockDomain(reset_less=True)
         self.clock_domains.cd_sys4x_dqs = ClockDomain(reset_less=True)
         self.clock_domains.cd_clk200    = ClockDomain()
-        self.clock_domains.cd_eth0      = ClockDomain()
-        self.clock_domains.cd_eth1      = ClockDomain()
+        self.clock_domains.cd_eth       = ClockDomain()
 
         # # #
 
@@ -53,13 +52,7 @@ class _CRG(Module):
         pll.create_clkout(self.cd_sys4x,     4*sys_clk_freq)
         pll.create_clkout(self.cd_sys4x_dqs, 4*sys_clk_freq, phase=90)
         pll.create_clkout(self.cd_clk200,    200e6)
-
-        # PLL for Ethernet clocks
-        self.submodules.pll_eth = pll_eth = S7PLL(speedgrade=-1)
-        self.comb += pll_eth.reset.eq(~cpu_reset)
-        pll_eth.register_clkin(clk100, 100e6)
-        pll_eth.create_clkout(self.cd_eth0, 50e6)
-        pll_eth.create_clkout(self.cd_eth1, 50e6)
+        pll.create_clkout(self.cd_eth,       50e6)
 
         self.submodules.idelayctrl = S7IDELAYCTRL(self.cd_clk200)
 
@@ -142,6 +135,8 @@ class BaseSoC(SoCCore):
         self.add_constant("REMOTEIP3", 0)
         self.add_constant("REMOTEIP4", 100)
 
+        eth_clocks = self.platform.request("eth_clocks")
+
         # Ethernet interface 0
         # Naming this 'ethphy' and 'ethmac' enables BIOS TFTP boot
         # functionality. This is disabled here by naming it 'ethphy0' and
@@ -149,19 +144,19 @@ class BaseSoC(SoCCore):
         # this functionality disable other functions like booting from
         # SD card
         self.submodules.ethphy0 = LiteEthPHYRMII(
-            clock_pads = self.platform.request("eth0_clocks"),
+            clock_pads = eth_clocks,
             pads       = self.platform.request("eth0"),
             name="ethphy0",
-            with_hw_init_reset=True, cd_name="eth0")
+            with_hw_init_reset=True, cd_name="eth", no_clk_out=True)
         self.add_csr("ethphy0")
         self.add_ethernet(name="ethmac0", phy=self.ethphy0)
 
         # Ethernet interface 1
         self.submodules.ethphy1 = LiteEthPHYRMII(
-            clock_pads = self.platform.request("eth1_clocks"),
+            clock_pads = eth_clocks,
             pads       = self.platform.request("eth1"),
             name="ethphy1",
-            with_hw_init_reset=True, cd_name="eth1")
+            with_hw_init_reset=True, cd_name="eth", no_clk_out=True)
         self.add_csr("ethphy1")
         self.add_ethernet(name="ethmac1", phy=self.ethphy1)
 
