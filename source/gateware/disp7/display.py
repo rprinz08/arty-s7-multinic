@@ -1,7 +1,7 @@
 from migen import *
-from source.disp7.bin_to_bcd import *
-from source.disp7.decoder_7seg import *
-from source.disp7.prescaler import *
+from gateware.disp7.bin_to_bcd import *
+from gateware.disp7.decoder_7seg import *
+from gateware.disp7.prescaler import *
 from pprint import pprint
 
 

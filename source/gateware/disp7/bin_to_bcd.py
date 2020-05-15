@@ -1,5 +1,5 @@
 from migen import *
-from source.disp7.bin_to_bcd_digit import *
+from gateware.disp7.bin_to_bcd_digit import *
 from pprint import pprint
 
 

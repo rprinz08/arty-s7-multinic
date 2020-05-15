@@ -1,8 +1,8 @@
-include ../../build/software/include/generated/variables.mak
+include ../../../build/software/include/generated/variables.mak
 include $(SOC_DIRECTORY)/software/common.mak
 
 BUILD_DIRECTORY = $(BUILDINC_DIRECTORY)/..
-FIRMWARE_DIRECTORY=$(BUILD_DIRECTORY)/../../source/firmware
+FIRMWARE_DIRECTORY=$(BUILD_DIRECTORY)/../../source/software/firmware
 
 ifeq ($(COPY_TO_MAIN_RAM), 1)
 CRT0 = $(BUILD_DIRECTORY)/libbase/crt0-ctr.o

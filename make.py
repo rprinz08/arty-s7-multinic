@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+import sys
+sys.path.insert(0, './source')
+
 import os
 import argparse
 import logging
@@ -7,7 +10,7 @@ import logging
 from litex.build.xilinx.vivado import vivado_build_args, vivado_build_argdict
 from litex.soc.integration.soc_sdram import *
 from litex.soc.integration.builder import *
-from source.top import *
+from gateware.top import *
 
 
 def build(args):

@@ -1,11 +1,11 @@
-import sys
-sys.path.insert(0,'..')
+#import sys
+#sys.path.insert(0,'..')
 
 import argparse
 
 from migen import *
 
-from source import arty_s7
+from gateware import arty_s7
 from litex.build.xilinx.vivado import vivado_build_args, vivado_build_argdict
 
 from litex.soc.cores.clock import *
@@ -21,10 +21,10 @@ from litex.soc.cores.spi_flash import *
 from litex.soc.cores.gpio import *
 
 # hello world sample
-from source.hello import Hello
+from gateware.hello import Hello
 
 # Seven Segment Display
-from source.display import Disp7_stub
+from gateware.display import Disp7_stub
 
 # Platform---------------------------------------------------------------------
 Platform = arty_s7.Platform(programmer='openocd')

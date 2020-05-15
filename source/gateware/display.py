@@ -1,5 +1,5 @@
 from litex.soc.interconnect.csr import *
-from source.disp7.display import *
+from gateware.disp7.display import *
 
 
 class Disp7_stub(Module, AutoCSR):
