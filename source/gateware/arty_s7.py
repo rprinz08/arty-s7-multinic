@@ -135,32 +135,34 @@ _io = [
     ("pmodd", 0, Pins("V15 U12 V13 T12 T13 R11 T11 U11"),
         IOStandard("LVCMOS33")),
 
-	# Ethernet ref clk
-	("eth_clocks", 0,
-		Subsignal("ref_clk", Pins("L16")),
+	# Ethernet 0
+	("eth0_clocks", 0,
+		Subsignal("ref_clk", Pins("R16")),
+		IOStandard("LVCMOS33"),
+	),
+	("eth0", 0,
+		Subsignal("mdio", Pins("J14")),
+		Subsignal("mdc", Pins("J13")),
+
+		Subsignal("crs_dv", Pins("L13")),
+		Subsignal("rx_data", Pins("N13 L16")),
+		Subsignal("tx_data", Pins("R17 V17")),
+		Subsignal("tx_en", Pins("T14")),
 		IOStandard("LVCMOS33"),
 	),
 
-    # Ethernet 0
-	("eth0", 0,
-		Subsignal("mdio", Pins("L13")),
-		Subsignal("mdc", Pins("N13")),
-
-		Subsignal("crs_dv", Pins("R14")),
-		Subsignal("rx_data", Pins("T14 R16")),
-		Subsignal("tx_data", Pins("R17 V17")),
-		Subsignal("tx_en", Pins("D14")),
-		IOStandard("LVCMOS33")
-	),
-
 	# Ethernet 1
+	("eth1_clocks", 0,
+		Subsignal("ref_clk", Pins("G16")),
+		IOStandard("LVCMOS33"),
+	),
 	("eth1", 0,
         # connected to MDIO bus of eth0
-		Subsignal("crs_dv", Pins("H17")),
-		Subsignal("rx_data", Pins("K14 G16")),
-		Subsignal("tx_data", Pins("J13 J14")),
-		Subsignal("tx_en", Pins("D15")),
-		IOStandard("LVCMOS33")
+		Subsignal("crs_dv", Pins("R15")),
+		Subsignal("rx_data", Pins("T15 H16")),
+		Subsignal("tx_data", Pins("K14 K13")),
+		Subsignal("tx_en", Pins("H17")),
+		IOStandard("LVCMOS33"),
 	)
 ]
 

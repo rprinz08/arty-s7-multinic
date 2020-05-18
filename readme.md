@@ -6,6 +6,7 @@ Python based Migen HDL.
 ![](doc/fpga_net_1_l.jpg)
 
 ![](doc/fpga_net_sch_1_l.jpg)
+
 Download schematic as [PDF](doc/fpga_net_sch.pdf).
 
 It uses two [Texas Instruments DP83848](http://www.ti.com/product/DP83848-EP)
@@ -33,14 +34,14 @@ In addition a `Makefile` is used to handle dependencies and file changes.
 Assuming that all prerequisites are correctly installed using make:
 ```
 make                Builds FPGA bitstream and BIOS software
-make build-sw		Builds BIOS
-make build-fpga		Builds FPGA bitstream
+make build-sw       Builds BIOS
+make build-fpga     Builds FPGA bitstream
 make conv           Convert Python FHDL to Verilog
 make load           Loads bitstream into FPGA via serial port
 make load-sw        Loads firmware binary using serial port
 make reload         Same as "load" but does not rebuild in case of changes
 make flash          Stores bitstream into FPGA boot flash
-make flash-sw		Flash BIOS software
+make flash-sw       Flash BIOS software
 make reflash        Same as "flash" but does not rebuild in case of changes
 make term           Opens LiteX serial lxterm console
 make clean          Cleans/removes all build artefacts
@@ -50,7 +51,7 @@ The `make.py` script is called from make (Makefile) and provides the following:
 make.py --help      shows basic help
 make.py build       converts LiteX/Migen FHDL into verilog,
                     starts Xilinx Vivado and generates FPGA bitstream
-make.py build-sw	same as 'build' but only builds BIOS
+make.py build-sw    same as 'build' but only builds BIOS
 make.py build-fpga	same as 'build' but only builds FPGA bitstream
 make.py load        loads the bitstream into FPGA
 make.py flash       flashes the bitstream into config flash
@@ -217,6 +218,36 @@ console in- and output and accessing FPGA logic blocks like the seven segment
 display. The `display` command takes a decimal value between 0 and 255 and
 displays it's hex representation on the LED display. The `hello` command
 returns the entered value xor-ed with 0xff from the FPGA.
+
+## RMII notes
+Although there exists a OSCIN pin on the DP83848 PHY module which 
+suggests a clock input, it is the output of the 50MHz oscillator
+available on the module. This oscillator directly clocks the DP83848 
+PHY and is available on the module connector as reference clock
+output.
+
+The default LiteX Liteeth RMII MAC operates with the clock of a 50MHz 
+PLL it instantiates assuming that it must provide the clock to the 
+PHY. As the PHY modules use their own oscillator a patch was 
+needed to control (disable) the creation of a clock (see Caveats below).
+
+To synchronize the MAC with the PHY the PHYs clock can be 
+used as input to the MAC instead of the default 50MHz PLL clock 
+output. It would even be possible to clock the MAC with its internal, 
+and the PHY with its own clock and, as long as both clocks do not 
+differ too much it will work. But more reliable would be synced 
+clocks.
+
+On Xilinx Spartan7 FPGAs only the positive (P) version of clock 
+capable (CC) pins can be used as they are internally special wired
+and there is only a limited number per I/O bank available.
+As each module has its own oscillator they should be synced to its 
+corresponding MAC. This is somehow inefficient as normally multiple PHYs and MACs share a common clock. But to prevent modifying each module, each modules OSCIN is connected to one of four CC-P pin on
+the FPGA syncing its corresponding MAC.
+
+Although a simple modification on the module makes it possible to
+share clocks. Removing the 0 Ohm resistor R1 makes it possible to clock the modules from outside via the OSCIN pin.
+![x](doc/dp83848-1.jpg)
 
 ## Caveats
 Building the bitstream and loading it with xc3sprog did not work out of the
