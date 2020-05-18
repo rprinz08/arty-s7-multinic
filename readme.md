@@ -52,7 +52,7 @@ make.py --help      shows basic help
 make.py build       converts LiteX/Migen FHDL into verilog,
                     starts Xilinx Vivado and generates FPGA bitstream
 make.py build-sw    same as 'build' but only builds BIOS
-make.py build-fpga	same as 'build' but only builds FPGA bitstream
+make.py build-fpga  same as 'build' but only builds FPGA bitstream
 make.py load        loads the bitstream into FPGA
 make.py flash       flashes the bitstream into config flash
 make.py flash-sw    flashes the BIOS into config flash
@@ -247,7 +247,9 @@ the FPGA syncing its corresponding MAC.
 
 Although a simple modification on the module makes it possible to
 share clocks. Removing the 0 Ohm resistor R1 makes it possible to clock the modules from outside via the OSCIN pin.
+
 ![x](doc/dp83848-1.jpg)
+
 
 ## Caveats
 Building the bitstream and loading it with xc3sprog did not work out of the
