@@ -220,33 +220,36 @@ displays it's hex representation on the LED display. The `hello` command
 returns the entered value xor-ed with 0xff from the FPGA.
 
 ## RMII notes
-Although there exists a OSCIN pin on the DP83848 PHY module which 
+Although there exists a OSCIN pin on the DP83848 PHY module which
 suggests a clock input, it is the output of the 50MHz oscillator
-available on the module. This oscillator directly clocks the DP83848 
+available on the module. This oscillator directly clocks the DP83848
 PHY and is available on the module connector as reference clock
 output.
 
-The default LiteX Liteeth RMII MAC operates with the clock of a 50MHz 
-PLL it instantiates assuming that it must provide the clock to the 
-PHY. As the PHY modules use their own oscillator a patch was 
+The default LiteX Liteeth RMII MAC operates with the clock of a 50MHz
+PLL it instantiates assuming that it must provide the clock to the
+PHY. As the PHY modules use their own oscillator a patch was
 needed to control (disable) the creation of a clock (see Caveats below).
 
-To synchronize the MAC with the PHY the PHYs clock can be 
-used as input to the MAC instead of the default 50MHz PLL clock 
-output. It would even be possible to clock the MAC with its internal, 
-and the PHY with its own clock and, as long as both clocks do not 
-differ too much it will work. But more reliable would be synced 
+To synchronize the MAC with the PHY the PHYs clock can be
+used as input to the MAC instead of the default 50MHz PLL clock
+output. It would even be possible to clock the MAC with its internal,
+and the PHY with its own clock and, as long as both clocks do not
+differ too much it will work. But more reliable would be synced
 clocks.
 
-On Xilinx Spartan7 FPGAs only the positive (P) version of clock 
+On Xilinx Spartan7 FPGAs only the positive (P) version of clock
 capable (CC) pins can be used as they are internally special wired
 and there is only a limited number per I/O bank available.
-As each module has its own oscillator they should be synced to its 
-corresponding MAC. This is somehow inefficient as normally multiple PHYs and MACs share a common clock. But to prevent modifying each module, each modules OSCIN is connected to one of four CC-P pin on
+As each module has its own oscillator they should be synced to its
+corresponding MAC. This is somehow inefficient as normally multiple PHYs and
+MACs share a common clock. But to prevent modifying each module, each modules
+OSCIN is connected to one of four CC-P pin on
 the FPGA syncing its corresponding MAC.
 
 Although a simple modification on the module makes it possible to
-share clocks. Removing the 0 Ohm resistor R1 makes it possible to clock the modules from outside via the OSCIN pin.
+share clocks. Removing the 0 Ohm resistor R1 makes it possible to clock the
+modules from outside via the OSCIN pin.
 
 ![x](doc/dp83848-1.jpg)
 
@@ -263,6 +266,7 @@ Two simple patches to `liteeth/phy/rmii.py` and `liteeth/mac/core.phy` fixed thi
 They can be found on github:
 * [Reset patch](https://github.com/rprinz08/liteeth/commit/6ac06a8423d326f111316909a07afba65db71fe0)
 * [Multy RMII PHY patch](https://github.com/rprinz08/liteeth/commit/ed355c5aae09e2234098910da4ee220956210371)
+* [Control clock output](https://github.com/rprinz08/liteeth/commit/66660f6931ec5b08ce531ed030829e0ba198311a)
 
 Also `xc3sprog` did not support the Xilinx Spartan-7 chip used on the
 Arty-S7-50. For this to work another patch was developed. Simple get the source

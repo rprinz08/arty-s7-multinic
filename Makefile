@@ -1,4 +1,5 @@
 BUILD_PATH=./build
+BUILD_NAME=top
 GATEWARE_BUILD_PATH=$(BUILD_PATH)/gateware
 SOFTWARE_BUILD_PATH=$(BUILD_PATH)/software
 
@@ -6,21 +7,24 @@ SOURCE_PATH=./source
 GATEWARE_SOURCE_PATH=$(SOURCE_PATH)/gateware
 SOFTWARE_SOURCE_PATH=$(SOURCE_PATH)/software
 
-BITSTREAM=$(GATEWARE_BUILD_PATH)/top.bin
+BITSTREAM=$(GATEWARE_BUILD_PATH)/$(BUILD_NAME).bin
 FIRMWARE_PATH=$(SOFTWARE_SOURCE_PATH)/firmware
 FIRMWARE=$(FIRMWARE_PATH)/firmware.bin
 FIRMWARE_FBI=$(FIRMWARE_PATH)/firmware.fbi
 
 IDENTIFIER="Arty-S7 RISC64 v1.0"
 IDENTIFIER_VER=true
+
 CSR_JSON=$(BUILD_PATH)/csr.json
-DEV = "/dev/ttyUSB0"
+
+DEV = "/dev/ttyUSB1"
 UART_BAUD=115200
 CPU_TYPE="vexriscv"
 CPU_VARIANT="linux"
 
 $(BITSTREAM): $(GATEWARE_SOURCE_PATH)/*.py
 	@./make.py build \
+		--build_name $(BUILD_NAME) \
 		--cpu-type $(CPU_TYPE) \
 		--cpu-variant $(CPU_VARIANT) \
 		--output-dir $(BUILD_PATH) \
@@ -33,6 +37,9 @@ $(BITSTREAM): $(GATEWARE_SOURCE_PATH)/*.py
 
 build-sw:
 	@./make.py build-sw \
+		--build_name $(BUILD_NAME) \
+		--cpu-type $(CPU_TYPE) \
+		--cpu-variant $(CPU_VARIANT) \
 		--output-dir $(BUILD_PATH) \
 		--gateware-dir $(GATEWARE_BUILD_PATH) \
 		--software-dir $(SOFTWARE_BUILD_PATH) \
@@ -42,6 +49,9 @@ build-sw:
 
 build-fpga:
 	@./make.py build-sw \
+		--build_name $(BUILD_NAME) \
+		--cpu-type $(CPU_TYPE) \
+		--cpu-variant $(CPU_VARIANT) \
 		--output-dir $(BUILD_PATH) \
 		--gateware-dir $(GATEWARE_BUILD_PATH) \
 		--software-dir $(SOFTWARE_BUILD_PATH) \
@@ -51,6 +61,9 @@ build-fpga:
 
 conv:
 	@./make.py conv \
+		--build_name $(BUILD_NAME) \
+		--cpu-type $(CPU_TYPE) \
+		--cpu-variant $(CPU_VARIANT) \
 		--output-dir $(BUILD_PATH) \
 		--gateware-dir $(GATEWARE_BUILD_PATH) \
 		--software-dir $(SOFTWARE_BUILD_PATH) \
@@ -68,12 +81,18 @@ reload:
 	@# Does not check for changes in source files. Just uses existing
 	@# bitstream.
 	@./make.py load \
+		--build_name $(BUILD_NAME) \
+		--cpu-type $(CPU_TYPE) \
+		--cpu-variant $(CPU_VARIANT) \
 		--output-dir $(BUILD_PATH) \
 		--gateware-dir $(GATEWARE_BUILD_PATH) \
 		--software-dir $(SOFTWARE_BUILD_PATH)
 
 flash: $(BITSTREAM)
 	@./make.py flash \
+		--build_name $(BUILD_NAME) \
+		--cpu-type $(CPU_TYPE) \
+		--cpu-variant $(CPU_VARIANT) \
 		--output-dir $(BUILD_PATH) \
 		--gateware-dir $(GATEWARE_BUILD_PATH) \
 		--software-dir $(SOFTWARE_BUILD_PATH)
@@ -82,6 +101,9 @@ reflash:
 	@# Does not check for changes in source files. Just uses existing
 	@# bitstream.
 	@./make.py flash \
+		--build_name $(BUILD_NAME) \
+		--cpu-type $(CPU_TYPE) \
+		--cpu-variant $(CPU_VARIANT) \
 		--output-dir $(BUILD_PATH) \
 		--gateware-dir $(GATEWARE_BUILD_PATH) \
 		--software-dir $(SOFTWARE_BUILD_PATH)

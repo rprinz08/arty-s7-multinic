@@ -20,7 +20,10 @@ def build(args):
     builder = Builder(soc, **builder_argdict(args), bios_options = ["TERM_MINI"])
 
     print("*** BUILDING BITSTREAM")
-    builder.build(**vivado_build_argdict(args))
+    kw = {}
+    if 'build_name' in args and isinstance(args.build_name, str):
+        kw['build_name'] = args.build_name
+    builder.build(**vivado_build_argdict(args), **kw)
     print("*** BUILD DONE")
 
 
@@ -29,7 +32,8 @@ def load(args):
     logging.disable(level=logging.CRITICAL)
     soc = BaseSoC(**soc_sdram_argdict(args))
     builder = Builder(soc, **builder_argdict(args), bios_options = ["TERM_MINI"])
-    bitstream = os.path.join(builder.gateware_dir, 'top.bit')
+    bitstream = os.path.join(builder.gateware_dir,
+                             '{}.bit'.format(args.build_name))
 
     print("*** LOADING BITSTREAM (%s) INTO FPGA" % bitstream)
     prog = soc.platform.create_programmer()
@@ -42,7 +46,8 @@ def flash(args):
     logging.disable(level=logging.CRITICAL)
     soc = BaseSoC(**soc_sdram_argdict(args))
     builder = Builder(soc, **builder_argdict(args), bios_options = ["TERM_MINI"])
-    bitstream = os.path.join(builder.gateware_dir, 'top.bin')
+    bitstream = os.path.join(builder.gateware_dir,
+                             '{}.bit'.format(args.build_name))
 
     print("*** FLASHING BITSTREAM (%s) TO FPGA FLASH" % bitstream)
     prog = soc.platform.create_programmer()
@@ -69,6 +74,8 @@ if __name__ == "__main__":
                                  'conv',
                                  'load', 'flash', 'flash-sw'],
                         default='build')
+    parser.add_argument('--build_name', default='top',
+                              help='Name of build')
     builder_args(parser)
 
     if any(a in sys.argv for a in [
@@ -85,14 +92,12 @@ if __name__ == "__main__":
             sys.argv.append('--no-compile-gateware')
 
     elif 'build-fpga' in sys.argv:
-        vivado_build_args(parser)
         while '--no-compile-gateware' in sys.argv:
             sys.argv.remove('--no-compile-gateware')
         if not '--no-compile-software' in sys.argv:
             sys.argv.append('--no-compile-software')
 
     elif 'conv' in sys.argv:
-        vivado_build_args(parser)
         if not '--no-compile-software' in sys.argv:
             sys.argv.append('--no-compile-software')
         if not '--no-compile-gateware' in sys.argv:
