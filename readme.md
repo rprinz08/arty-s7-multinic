@@ -1,21 +1,29 @@
 # Arty-S7-50, 2x NIC, VexRisc, Migen
-This project describes how to build a soft-core Risc based system with 2
+This project describes how to build a soft-core Risc based system with multiple
 Ethernet interfaces on a Digilent Arty-S7-50 with a Xilinx Spartan 7 FPGA using
-Python based Migen HDL.
+Python based Migen HDL and LiteX SoC builder.
 
+Prototype of the project
 ![](doc/fpga_net_1_l.jpg)
 
-![](doc/fpga_net_sch_1_l.jpg)
+More evolved version with up to four Ethernet interfaces and a PCB. The [KiCad](https://kicad-pcb.org/) project files are included in this repository. 
+![](doc/arty_s7_50_multi_net.jpg)
 
-Download schematic as [PDF](doc/fpga_net_sch.pdf).
+![](doc/arty_s7_50_multi_net_pcbs.jpg)
 
-It uses two [Texas Instruments DP83848](http://www.ti.com/product/DP83848-EP)
+![](doc/arty_s7_50_multi_net_sch.jpg)
+
+Download schematic as [PDF](doc/arty_s7_50_multi_net_sch.pdf).
+
+It uses multiple [Texas Instruments DP83848](http://www.ti.com/product/DP83848-EP)
 based RMII Ethernet PHYs from [Waveshare](https://www.waveshare.com/dp83848-ethernet-board.htm).
 In addition a [SD-Card PMOD](https://store.digilentinc.com/pmod-microsd-microsd-card-slot/)
-and a simple [seven segment display](source/disp7/readme.md) completes the
-system.
+and a simple [Seven Segment Display](source/disp7/readme.md) completes the system.
 
-More infos about this project on the [accompanying blog post](https://www.min.at/prinz/?x=entry:entry200428-150015).
+Note: in the PCB version the Seven Segment Display was removed due to I/O limitations.
+
+More infos about this project can be found in the accompanying blog posts
+[here](https://www.min.at/prinz/?x=entry:entry200428-150015) and [here](https://www.min.at/prinz/?x=entry:entry200602-105212).
 
 ## Prerequisites
 To build the FPGA bitstream, the SoC BIOS and the sample bare metal demo
@@ -279,6 +287,6 @@ Then rebuild `xc3sprog` which now can be used to program the Arty-S7-50.
 
 **Note: the project now uses [OpenOCD](http://openocd.org/) for programming.**
 
-More infos about this project can be found on the
-[accompanying blog post](https://www.min.at/prinz/?x=entry:entry200428-150015).
+More infos about this project can be found in the accompanying blog posts
+[here](https://www.min.at/prinz/?x=entry:entry200428-150015) and [here](https://www.min.at/prinz/?x=entry:entry200602-105212).
 
