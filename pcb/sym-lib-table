@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name arty_s7_50_multi_net)(type Legacy)(uri ${KIPRJMOD}/arty_s7_50_multi_net.lib)(options "")(descr ""))
+)
