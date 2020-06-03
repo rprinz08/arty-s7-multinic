@@ -72,7 +72,6 @@ static int get_number(const char *str) {
 
 static void help(void)
 {
-	puts("display value  - Display 8bit values on 7Segment display on PMOD-D");
 	puts("hello value    - Returns value xor'ed with 0xff in FPGA");
 	//puts("gpio value     - Send 8bit values to PMOD-C");
 	puts("reboot         - reboot CPU");
@@ -131,19 +130,7 @@ void ci_service(void)
 			pmodd_out_write((uint8_t)val);
 		}
 	}
-	else
 	*/
-	// Seven Segment display test
-	if(strcmp(token, "display") == 0) {
-		char *val_raw = get_token(&str);
-		int val = get_number(val_raw);
-		if(val < 0 || val > 255) {
-			printf("Only numeric input between 0 and 255!\n");
-		}
-		else {
-			disp7_dispval_write((uint8_t)val);
-		}
-	}
 
 	ci_prompt();
 }

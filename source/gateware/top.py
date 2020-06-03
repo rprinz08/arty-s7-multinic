@@ -1,6 +1,3 @@
-#import sys
-#sys.path.insert(0,'..')
-
 import argparse
 
 from migen import *
@@ -9,6 +6,7 @@ from gateware import arty_s7
 from litex.build.xilinx.vivado import vivado_build_args, vivado_build_argdict
 
 from litex.soc.cores.clock import *
+from litex.soc.cores.pwm import PWM
 from litex.soc.integration.soc_core import *
 from litex.soc.integration.soc_sdram import *
 from litex.soc.integration.builder import *
@@ -23,15 +21,26 @@ from litex.soc.cores.gpio import *
 # hello world sample
 from gateware.hello import Hello
 
-# Seven Segment Display
-from gateware.display import Disp7_stub
-
 # Platform---------------------------------------------------------------------
 Platform = arty_s7.Platform(programmer='openocd')
 
+# Helpers ---------------------------------------------------------------------
+def platform_request_all(platform, name):
+    from litex.build.generic_platform import ConstraintError
+    r = []
+    while True:
+        try:
+            r += [platform.request(name, len(r))]
+        except ConstraintError:
+            break
+    if r == []:
+        raise ValueError
+    return r
+
 # CRG -------------------------------------------------------------------------
 class _CRG(Module):
-    def __init__(self, platform, sys_clk_freq, eth0_clock, eth1_clock):
+    def __init__(self, platform, sys_clk_freq,
+                 eth0_clock, eth1_clock, eth2_clock):
         self.clock_domains.cd_sys       = ClockDomain()
         self.clock_domains.cd_sys2x     = ClockDomain(reset_less=True)
         self.clock_domains.cd_sys4x     = ClockDomain(reset_less=True)
@@ -39,6 +48,7 @@ class _CRG(Module):
         self.clock_domains.cd_clk200    = ClockDomain()
         self.clock_domains.cd_eth0      = ClockDomain()
         self.clock_domains.cd_eth1      = ClockDomain()
+        self.clock_domains.cd_eth2      = ClockDomain()
 
         # # #
 
@@ -57,6 +67,7 @@ class _CRG(Module):
         # external eth ref clocks
         self.comb += self.cd_eth0.clk.eq(eth0_clock.ref_clk)
         self.comb += self.cd_eth1.clk.eq(eth1_clock.ref_clk)
+        self.comb += self.cd_eth2.clk.eq(eth2_clock.ref_clk)
 
         self.submodules.idelayctrl = S7IDELAYCTRL(self.cd_clk200)
 
@@ -68,15 +79,16 @@ class BaseSoC(SoCCore):
         # SoCCore -------------------------------------------------------------
         SoCCore.__init__(self, self.platform, clk_freq=sys_clk_freq, **kwargs)
 
+        #self.mem_map = {**self.mem_map, **{
+        #    "spiflash": 0xd0_000_000
+        #}}
+
         # CRG -----------------------------------------------------------------
         eth0_clock = self.platform.request("eth0_clocks")
         eth1_clock = self.platform.request("eth1_clocks")
+        eth2_clock = self.platform.request("eth2_clocks")
         self.submodules.crg = _CRG(self.platform, sys_clk_freq,
-                                   eth0_clock, eth1_clock)
-
-        self.mem_map = {**self.mem_map, **{
-            "spiflash": 0xd0000000
-        }}
+                                   eth0_clock, eth1_clock, eth2_clock)
 
         # DDR3 SDRAM ----------------------------------------------------------
         if not self.integrated_main_ram_size:
@@ -97,17 +109,19 @@ class BaseSoC(SoCCore):
             )
 
         # SPI Flash -----------------------------------------------------------
-        SPIFLASH_PAGE_SIZE    = 256
-        SPIFLASH_SECTOR_SIZE  = 64 * 1024
-        SPIFLASH_DUMMY_CYCLES = 11
+        # Disabled due to rom size limitations
 
-        self.add_spi_flash(dummy_cycles=SPIFLASH_DUMMY_CYCLES)
+        #SPIFLASH_PAGE_SIZE    = 256
+        #SPIFLASH_SECTOR_SIZE  = 64 * 1024
+        #SPIFLASH_DUMMY_CYCLES = 11
 
-        self.add_constant("SPIFLASH_PAGE_SIZE", SPIFLASH_PAGE_SIZE)
-        self.add_constant("SPIFLASH_SECTOR_SIZE", SPIFLASH_SECTOR_SIZE)
-        # Place firmware in second half of 16MB SPI flash. First half is
-        # used for FPGA bitstream
-        self.add_constant("FLASH_BOOT_ADDRESS", self.mem_map["spiflash"] + 0x800000)
+        #self.add_spi_flash(dummy_cycles=SPIFLASH_DUMMY_CYCLES)
+
+        #self.add_constant("SPIFLASH_PAGE_SIZE", SPIFLASH_PAGE_SIZE)
+        #self.add_constant("SPIFLASH_SECTOR_SIZE", SPIFLASH_SECTOR_SIZE)
+        ## Place firmware in second half of 16MB SPI flash. First half is
+        ## used for FPGA bitstream
+        #self.add_constant("FLASH_BOOT_ADDRESS", self.mem_map["spiflash"] + 0x800000)
 
         # SPI SD-Card ---------------------------------------------------------
         self.add_spi_sdcard(name="spisdcard", clk_freq=400e3)
@@ -121,13 +135,17 @@ class BaseSoC(SoCCore):
         #self.submodules.pmodd = GPIOInOut(in_signal=pd, out_signal=pd)
         #self.csr.add("pmodd")
 
-        # Seven Segment Display -----------------------------------------------
-        pc = self.platform.request("pmodc")
-        self.submodules.disp7 = Disp7_stub(pc,
-                                           CLK_FRQ_HZ=sys_clk_freq,
-                                           REFRESH_CLK_HZ=250, NUM_DIGITS=2,
-                                           BCD_MODE=False, FLIP=True)
-        self.csr.add("disp7")
+        # Misc GPIO -----------------------------------------------------------
+        self.submodules.leds = GPIOOut(Cat(platform_request_all(self.platform, "user_led")))
+        self.add_csr("leds")
+
+        rgb_led_pads = self.platform.request("rgb_led", 0)
+        for n in "rgb":
+            setattr(self.submodules, "rgb_led_{}0".format(n), PWM(getattr(rgb_led_pads, n)))
+            self.add_csr("rgb_led_{}0".format(n))
+
+        self.submodules.switches = GPIOIn(Cat(platform_request_all(self.platform, "user_sw")))
+        self.add_csr("switches")
 
         # Ethernet ------------------------------------------------------------
         # Loval IP4 address of Ethernet interface 1 (10.0.0.50)
@@ -148,13 +166,13 @@ class BaseSoC(SoCCore):
         # 'ethmac0' as BIOS size wont fit into bitstream ROM. If you want
         # this functionality disable other functions like booting from
         # SD card
-        self.submodules.ethphy0 = LiteEthPHYRMII(
+        self.submodules.ethphy = LiteEthPHYRMII(
             clock_pads = eth0_clock,
             pads       = self.platform.request("eth0"),
-            name="ethphy0",
+            name="ethphy",
             with_hw_init_reset=True, cd_name="eth0", no_clk_out=True)
-        self.add_csr("ethphy0")
-        self.add_ethernet(name="ethmac0", phy=self.ethphy0)
+        self.add_csr("ethphy")
+        self.add_ethernet(name="ethmac", phy=self.ethphy)
 
         # Ethernet interface 1
         self.submodules.ethphy1 = LiteEthPHYRMII(
@@ -164,4 +182,13 @@ class BaseSoC(SoCCore):
             with_hw_init_reset=True, cd_name="eth1", no_clk_out=True)
         self.add_csr("ethphy1")
         self.add_ethernet(name="ethmac1", phy=self.ethphy1)
+
+        # Ethernet interface 2
+        self.submodules.ethphy2 = LiteEthPHYRMII(
+            clock_pads = eth2_clock,
+            pads       = self.platform.request("eth2"),
+            name="ethphy2",
+            with_hw_init_reset=True, cd_name="eth2", no_clk_out=True)
+        self.add_csr("ethphy2")
+        self.add_ethernet(name="ethmac2", phy=self.ethphy2)
 

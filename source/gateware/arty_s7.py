@@ -33,7 +33,7 @@ _io = [
     ("user_sw", 0, Pins("H14"), IOStandard("LVCMOS33")),
     ("user_sw", 1, Pins("H18"), IOStandard("LVCMOS33")),
     ("user_sw", 2, Pins("G18"), IOStandard("LVCMOS33")),
-    ("user_sw", 3, Pins("M5"), IOStandard("LVCMOS33")),
+    ("user_sw", 3, Pins("M5"), IOStandard("SSTL135")),
 
     ("user_btn", 0, Pins("G15"), IOStandard("LVCMOS33")),
     ("user_btn", 1, Pins("K16"), IOStandard("LVCMOS33")),
@@ -163,6 +163,20 @@ _io = [
 		Subsignal("tx_data", Pins("K14 K13")),
 		Subsignal("tx_en", Pins("H17")),
 		IOStandard("LVCMOS33"),
+	),
+
+	# Ethernet 2
+	("eth2_clocks", 0,
+		Subsignal("ref_clk", Pins("D14")),
+		IOStandard("LVCMOS33")
+	),
+	("eth2", 0,
+        # connected to MDIO bus of eth0
+		Subsignal("crs_dv", Pins("U17")),
+		Subsignal("rx_data", Pins("U18 U16")),
+		Subsignal("tx_data", Pins("R13 V14")),
+		Subsignal("tx_en", Pins("P13")),
+		IOStandard("LVCMOS33")
 	)
 ]
 
@@ -295,4 +309,9 @@ class Platform(XilinxPlatform):
         else:
             raise ValueError("{} programmer is not supported"
                              .format(self.programmer))
+
+    def do_finalize(self, fragment):
+        XilinxPlatform.do_finalize(self, fragment)
+        self.add_period_constraint(self.lookup_request(
+            self.default_clk_name, loose=True), self.default_clk_period)
 

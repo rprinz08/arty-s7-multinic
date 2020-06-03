@@ -1,5 +1,5 @@
-# Arty-S7-50, 2x NIC, VexRisc, Migen
-This project describes how to build a soft-core Risc based system with multiple
+# Arty-S7-50, VexRiscV, Migen, LiteX, MulitNet
+This project describes how to build a soft-core RiscV based system with multiple
 Ethernet interfaces on a Digilent Arty-S7-50 with a Xilinx Spartan 7 FPGA using
 Python based Migen HDL and LiteX SoC builder.
 
@@ -17,8 +17,7 @@ Download schematic as [PDF](doc/arty_s7_50_multi_net_sch.pdf).
 
 It uses multiple [Texas Instruments DP83848](http://www.ti.com/product/DP83848-EP)
 based RMII Ethernet PHYs from [Waveshare](https://www.waveshare.com/dp83848-ethernet-board.htm).
-In addition a [SD-Card PMOD](https://store.digilentinc.com/pmod-microsd-microsd-card-slot/)
-and a simple [Seven Segment Display](source/disp7/readme.md) completes the system.
+In addition a [SD-Card PMOD](https://store.digilentinc.com/pmod-microsd-microsd-card-slot/) completes the system.
 
 Note: in the PCB version the Seven Segment Display was removed due to I/O limitations.
 
@@ -90,6 +89,8 @@ As lang as bitstream size + firmware size < 15MB they can reside together in
 the flash. Current configuration halfs the flash. First half used for the
 bitsream second half for the firmware. The `make flash-sw` writes the
 `firmware.fbi` to flash adress 0x800000.
+
+*Note: Due to BIOS ROM size limitations the option to boot from SPI flash has been disabled. Booting the system is possible via SPI SD-Card, TFTP and serial.*
 
 ## Running
 Build and flash the FPGA bitstream:

@@ -24,7 +24,6 @@ int main(void)
 	time_init();
 
 	wputs("Hello firmware booting...\n");
-	disp7_dispval_write(66);
 
 	ci_prompt();
 	while(1) {
