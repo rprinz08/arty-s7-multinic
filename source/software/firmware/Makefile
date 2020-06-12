@@ -25,7 +25,8 @@ OBJECTS = \
 CFLAGS += \
 	$(CPUFLAGS) \
 	-I$(BUILDINC_DIRECTORY) \
-	-I$(FIRMWARE_DIRECTORY)
+	-I$(FIRMWARE_DIRECTORY) \
+	-I../third_party/umm_malloc/umm_malloc/build/include
 
 CFLAGS += \
 	-Wall \
@@ -55,7 +56,8 @@ firmware.elf: $(CRT0) $(BUILD_DIRECTORY)/libbase/libbase-nofloat.a $(BUILD_DIREC
 		$(CRT0) \
         $(OBJECTS) \
         -L$(BUILD_DIRECTORY)/libbase -lbase-nofloat \
-        -L$(BUILD_DIRECTORY)/libcompiler_rt -lcompiler_rt
+        -L$(BUILD_DIRECTORY)/libcompiler_rt -lcompiler_rt \
+		-L../third_party/umm_malloc/umm_malloc/build/lib -lumm
 	chmod -x $@
 
 firmware.elf: $(FIRMWARE_DIRECTORY)/$(LINKER_LD) $(OBJECTS)

@@ -14,6 +14,7 @@
 #include "ci.h"
 
 const int RANDOM_RUNS = 500;
+const int MALLOC_RUNS = 500;
 
 static char *readstr(void)
 {
@@ -80,6 +81,8 @@ static void help(void)
     puts("uptime           - show system uptime in seconds");
     printf("random [runs]    - show random number generator values, default [%d] runs\n",
             RANDOM_RUNS);
+	printf("malloc [runs]    - test UMM malloc, default [%d] runs\n",
+			MALLOC_RUNS);
     puts("reboot           - reboot CPU");
     puts("help             - this command");
 }
@@ -142,6 +145,60 @@ void ci_service(void)
 		printf("\n");
     }
     else
+	if(strcmp(token, "malloc") == 0) {
+		// very simple malloc test
+
+		const char *PAT = "abcdefghijklmnopqrstuvwxyz-ABCDEFGHIJKLMNOPQRSTUVWXYZ-0123456789-";
+		const int LEN = strlen(PAT) + 12;
+
+		char *runs_raw = get_token(&str);
+		int runs = get_number(runs_raw);
+
+		if(runs < 0) {
+			printf("Only numeric input between 0 and %d!\n", MALLOC_RUNS);
+			ci_prompt();
+			return;
+		}
+		if(runs == 0)
+			runs = MALLOC_RUNS;
+
+		printf("malloc test %d bytes, %d runs\n",
+				(LEN * runs), runs);
+
+		// dont do this, this will break things!
+		//char *m[runs];
+		char **m = umm_malloc(runs * sizeof(char *));
+		int i = 0;
+
+		for(i=0; i<runs; i++) {
+			printf("malloc %10d\r", i);
+			m[i] = (char *)umm_malloc(LEN);
+			if(m[i] == NULL) {
+				printf("\nMalloc failed at run %d\n", i);
+				break;
+			}
+			snprintf(m[i], LEN, "%s-%010d", PAT, i);
+		}
+		printf("\n");
+
+		char buf[LEN];
+
+		for(int j=0; j<runs; j++) {
+			if(j == i)
+				break;
+
+			printf("free   %10d\r", j);
+			snprintf(buf, LEN, "%s-%010d", PAT, j);
+			if(strncmp(buf, m[j], LEN) != 0) {
+				printf("\nMatch error at run %d, was (%s) should be (%s)\n",
+						j, m[j], buf);
+			}
+			umm_free(m[j]);
+		}
+
+		printf("\ndone\n");
+	}
+	else
     // The 'hello' test command sends 8bit value to the input CSR of the
     // FPGA co-designed sample XOR module. Then reads back the value
     // XORed (in FPGA) with 0xff and displays the result
