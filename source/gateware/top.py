@@ -20,8 +20,8 @@ from litex.soc.cores.gpio import *
 
 # hello world sample
 from gateware.hello import Hello
-
 from gateware.ticker import *
+from gateware.random import *
 
 # Platform---------------------------------------------------------------------
 Platform = arty_s7.Platform(programmer='openocd')
@@ -198,4 +198,7 @@ class BaseSoC(SoCCore):
         self.submodules.ticker = Ticker(CLK_FRQ_HZ=sys_clk_freq)
         self.csr.add("ticker")
 
+        # random --------------------------------------------------------------
+        self.submodules.random = Random()
+        self.csr.add("random")
 
