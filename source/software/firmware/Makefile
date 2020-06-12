@@ -17,6 +17,7 @@ OBJECTS = \
 	main.o \
 	isr.o \
 	uptime.o \
+	system.o \
 	stdio_wrap.o \
 	reboot.o \
 	ci.o
@@ -71,11 +72,14 @@ boot-helper.o: $(CPU_DIRECTORY)/boot-helper.S
 %.o: $(FIRMWARE_DIRECTORY)/%.S
 	$(assemble)
 
+term:
+	@litex_term.py --speed 115200 /dev/ttyUSB1
+
 load: firmware.bin
-	@litex_term.py --speed 9600 --kernel ./firmware.bin /dev/ttyUSB2
+	@litex_term.py --speed 115200 --kernel ./firmware.bin /dev/ttyUSB1
 
 clean:
 	$(RM) $(OBJECTS) $(OBJECTS:.o=.d) firmware.fbi firmware.elf firmware.bin .*~ *~
 
-.PHONY: all clean load
+.PHONY: all clean term load
 

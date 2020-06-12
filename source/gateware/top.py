@@ -21,6 +21,8 @@ from litex.soc.cores.gpio import *
 # hello world sample
 from gateware.hello import Hello
 
+from gateware.ticker import *
+
 # Platform---------------------------------------------------------------------
 Platform = arty_s7.Platform(programmer='openocd')
 
@@ -191,4 +193,9 @@ class BaseSoC(SoCCore):
             with_hw_init_reset=True, cd_name="eth2", no_clk_out=True)
         self.add_csr("ethphy2")
         self.add_ethernet(name="ethmac2", phy=self.ethphy2)
+
+        # ticker --------------------------------------------------------------
+        self.submodules.ticker = Ticker(CLK_FRQ_HZ=sys_clk_freq)
+        self.csr.add("ticker")
+
 

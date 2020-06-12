@@ -9,7 +9,8 @@
 #include <generated/mem.h>
 
 #include "reboot.h"
-
+#include "system.h"
+#include "uptime.h"
 #include "ci.h"
 
 static char *readstr(void)
@@ -73,7 +74,8 @@ static int get_number(const char *str) {
 static void help(void)
 {
 	puts("hello value    - Returns value xor'ed with 0xff in FPGA");
-	//puts("gpio value     - Send 8bit values to PMOD-C");
+	puts("time           - show current clock ticks");
+	puts("uptime         - show system uptime in seconds");
 	puts("reboot         - reboot CPU");
 	puts("help           - this command");
 }
@@ -98,6 +100,17 @@ void ci_service(void)
 		help();
 	}
 	else
+	if(strcmp(token, "time") == 0) {
+		printf("clk Hz        (%10lu)\n", cpu_clock_freq());
+		printf("ticks         (%10lu)\n", ticks());
+		printf("milliseconds  (%10lu)\n", ticks_milliseconds());
+		printf("seconds       (%10lu)\n", ticks_seconds());
+	}
+	else
+	if(strcmp(token, "uptime") == 0) {
+		uptime_print();
+	}
+	else
 	if(strcmp(token, "reboot") == 0) {
 		reboot();
 	}
@@ -117,20 +130,6 @@ void ci_service(void)
 			printf("Write (%02x), Read (%02x)\n", val, result);
 		}
 	}
-	else
-	// GPIO test
-	/*
-	if(strcmp(token, "gpio") == 0) {
-		char *val_raw = get_token(&str);
-		int val = get_number(val_raw);
-		if(val < 0 || val > 255) {
-			printf("Only numeric input between 0 and 255!\n");
-		}
-		else {
-			pmodd_out_write((uint8_t)val);
-		}
-	}
-	*/
 
 	ci_prompt();
 }
