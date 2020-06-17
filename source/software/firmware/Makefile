@@ -1,6 +1,9 @@
 include ../../../build/software/include/generated/variables.mak
 include $(SOC_DIRECTORY)/software/common.mak
 
+ARCH=$(shell echo $(CPU) | tr a-z A-Z)
+$(info ${ARCH})
+
 BUILD_DIRECTORY = $(BUILDINC_DIRECTORY)/..
 FIRMWARE_DIRECTORY=$(BUILD_DIRECTORY)/../../source/software/firmware
 
@@ -20,19 +23,27 @@ OBJECTS = \
 	system.o \
 	stdio_wrap.o \
 	reboot.o \
-	ci.o
+	ci.o \
+	tools.o \
+	network.o \
+	network_if.o
 
 CFLAGS += \
 	$(CPUFLAGS) \
 	-I$(BUILDINC_DIRECTORY) \
 	-I$(FIRMWARE_DIRECTORY) \
-	-I../third_party/umm_malloc/umm_malloc/build/include
+	-I../third_party/umm_malloc/umm_malloc/build/include \
+	-I../third_party/picotcp/picotcp/build/include
 
 CFLAGS += \
 	-Wall \
 	-Werror \
 	-Wno-error=unused-function \
 	-Wno-error=unused-variable
+
+CFLAGS += \
+	-DARCH=$(CPU) \
+	-D$(ARCH)
 
 LDFLAGS += \
 
@@ -54,10 +65,11 @@ firmware.elf: $(CRT0) $(BUILD_DIRECTORY)/libbase/libbase-nofloat.a $(BUILD_DIREC
 		-T $(FIRMWARE_DIRECTORY)/$(LINKER_LD) \
 		-N -o $@ \
 		$(CRT0) \
-        $(OBJECTS) \
-        -L$(BUILD_DIRECTORY)/libbase -lbase-nofloat \
-        -L$(BUILD_DIRECTORY)/libcompiler_rt -lcompiler_rt \
-		-L../third_party/umm_malloc/umm_malloc/build/lib -lumm
+		$(OBJECTS) \
+		-L$(BUILD_DIRECTORY)/libbase -lbase-nofloat \
+		-L$(BUILD_DIRECTORY)/libcompiler_rt -lcompiler_rt \
+		-L../third_party/umm_malloc/umm_malloc/build/lib -lumm \
+		-L../third_party/picotcp/picotcp/build/lib -lpicotcp
 	chmod -x $@
 
 firmware.elf: $(FIRMWARE_DIRECTORY)/$(LINKER_LD) $(OBJECTS)

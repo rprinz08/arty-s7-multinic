@@ -8,13 +8,16 @@
 #include <generated/csr.h>
 #include <generated/mem.h>
 
+#include "config.h"
 #include "reboot.h"
 #include "system.h"
 #include "uptime.h"
+#include "network.h"
 #include "ci.h"
 
 const int RANDOM_RUNS = 500;
 const int MALLOC_RUNS = 500;
+
 
 static char *readstr(void)
 {
@@ -54,6 +57,7 @@ static char *readstr(void)
     return NULL;
 }
 
+
 static char *get_token(char **str)
 {
     char *c, *d;
@@ -70,9 +74,11 @@ static char *get_token(char **str)
     return d;
 }
 
+
 static int get_number(const char *str) {
     return atoi(str);
 }
+
 
 static void help(void)
 {
@@ -81,15 +87,17 @@ static void help(void)
     puts("uptime           - show system uptime in seconds");
     printf("random [runs]    - show random number generator values, default [%d] runs\n",
             RANDOM_RUNS);
-	printf("malloc [runs]    - test UMM malloc, default [%d] runs\n",
-			MALLOC_RUNS);
+    printf("malloc [runs]    - test UMM malloc, default [%d] runs\n",
+            MALLOC_RUNS);
+    printf("ping             - ping host (%s) via network interface (%s)\n",
+            ETH0_IP4_PING_ADDR, ETH0_NAME);
     puts("reboot           - reboot CPU");
     puts("help             - this command");
 }
 
 void ci_prompt(void)
 {
-    printf("HELLO>");
+    printf("HELLO >");
 }
 
 void ci_service(void)
@@ -98,14 +106,21 @@ void ci_service(void)
     char *token;
 
     str = readstr();
-    if(str == NULL) return;
+    if(str == NULL)
+        return;
 
     token = get_token(&str);
+    if(strlen(token) < 1) {
+        ci_prompt();
+        return;
+    }
+
+    printf("\n");
 
     if(strcmp(token, "help") == 0) {
         puts("Available commands:");
         help();
-		printf("\n");
+        printf("\n");
     }
     else
     if(strcmp(token, "time") == 0) {
@@ -113,12 +128,12 @@ void ci_service(void)
         printf("ticks         (%10lu)\n", ticks());
         printf("milliseconds  (%10lu)\n", ticks_milliseconds());
         printf("seconds       (%10lu)\n", ticks_seconds());
-		printf("\n");
+        printf("\n");
     }
     else
     if(strcmp(token, "uptime") == 0) {
         uptime_print();
-		printf("\n");
+        printf("\n");
     }
     else
     if(strcmp(token, "reboot") == 0) {
@@ -142,61 +157,66 @@ void ci_service(void)
             printf("random #%d (%10lu) (0x%08x)\n",
                     i, rnd, rnd);
         }
-		printf("\n");
+        printf("\n");
     }
     else
-	if(strcmp(token, "malloc") == 0) {
-		// very simple malloc test
+    if(strcmp(token, "malloc") == 0) {
+        // very simple malloc test
 
-		const char *PAT = "abcdefghijklmnopqrstuvwxyz-ABCDEFGHIJKLMNOPQRSTUVWXYZ-0123456789-";
-		const int LEN = strlen(PAT) + 12;
+        const char *PAT = "abcdefghijklmnopqrstuvwxyz-ABCDEFGHIJKLMNOPQRSTUVWXYZ-0123456789-";
+        const int LEN = strlen(PAT) + 12;
 
-		char *runs_raw = get_token(&str);
-		int runs = get_number(runs_raw);
+        char *runs_raw = get_token(&str);
+        int runs = get_number(runs_raw);
 
-		if(runs < 0) {
-			printf("Only numeric input between 0 and %d!\n", MALLOC_RUNS);
-			ci_prompt();
-			return;
-		}
-		if(runs == 0)
-			runs = MALLOC_RUNS;
+        if(runs < 0) {
+            printf("Only numeric input between 0 and %d!\n", MALLOC_RUNS);
+            ci_prompt();
+            return;
+        }
+        if(runs == 0)
+            runs = MALLOC_RUNS;
 
-		printf("malloc test %d bytes, %d runs\n",
-				(LEN * runs), runs);
+        printf("malloc test %d bytes, %d runs\n",
+                (LEN * runs), runs);
 
-		// dont do this, this will break things!
-		//char *m[runs];
-		char **m = umm_malloc(runs * sizeof(char *));
-		int i = 0;
+        // dont do this, this will break things!
+        //char *m[runs];
+        char **m = umm_malloc(runs * sizeof(char *));
+        int i = 0;
 
-		for(i=0; i<runs; i++) {
-			printf("malloc %10d\r", i);
-			m[i] = (char *)umm_malloc(LEN);
-			if(m[i] == NULL) {
-				printf("\nMalloc failed at run %d\n", i);
-				break;
-			}
-			snprintf(m[i], LEN, "%s-%010d", PAT, i);
-		}
+        for(i=0; i<runs; i++) {
+            printf("malloc %10d\r", i);
+            m[i] = (char *)umm_malloc(LEN);
+            if(m[i] == NULL) {
+                printf("\nMalloc failed at run %d\n", i);
+                break;
+            }
+            snprintf(m[i], LEN, "%s-%010d", PAT, i);
+        }
+        printf("\n");
+
+        char buf[LEN];
+
+        for(int j=0; j<runs; j++) {
+            if(j == i)
+                break;
+
+            printf("free   %10d\r", j);
+            snprintf(buf, LEN, "%s-%010d", PAT, j);
+            if(strncmp(buf, m[j], LEN) != 0) {
+                printf("\nMatch error at run %d, was (%s) should be (%s)\n",
+                        j, m[j], buf);
+            }
+            umm_free(m[j]);
+        }
+
+        printf("\ndone\n");
+    }
+    else
+	if(strcmp(token, "ping") == 0) {
+		ping();
 		printf("\n");
-
-		char buf[LEN];
-
-		for(int j=0; j<runs; j++) {
-			if(j == i)
-				break;
-
-			printf("free   %10d\r", j);
-			snprintf(buf, LEN, "%s-%010d", PAT, j);
-			if(strncmp(buf, m[j], LEN) != 0) {
-				printf("\nMatch error at run %d, was (%s) should be (%s)\n",
-						j, m[j], buf);
-			}
-			umm_free(m[j]);
-		}
-
-		printf("\ndone\n");
 	}
 	else
     // The 'hello' test command sends 8bit value to the input CSR of the
@@ -213,8 +233,10 @@ void ci_service(void)
             uint8_t result = hello_output_read();
             printf("Write (%02x), Read (%02x)\n", val, result);
         }
-		printf("\n");
+        printf("\n");
     }
+    else
+        printf("Invalid command (%s)\n\n", token);
 
     ci_prompt();
 }

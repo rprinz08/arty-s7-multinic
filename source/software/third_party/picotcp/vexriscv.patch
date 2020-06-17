@@ -1,0 +1,78 @@
+diff --git a/Makefile b/Makefile
+index 78ec25b0..89a90cd1 100644
+--- a/Makefile
++++ b/Makefile
+@@ -227,6 +227,10 @@ ifeq ($(ARCH),shared)
+   CFLAGS+=-fPIC
+ endif
+ 
++ifeq ($(ARCH),vexriscv)
++  CFLAGS+=-DVEXRISCV -march=rv32ima -mabi=ilp32
++endif
++
+ %.o:%.c deps
+ 	$(CC) -c $(CFLAGS) -o $@ $<
+ 
+diff --git a/include/arch/pico_vexriscv.h b/include/arch/pico_vexriscv.h
+index e69de29b..410d62a0 100644
+--- a/include/arch/pico_vexriscv.h
++++ b/include/arch/pico_vexriscv.h
+@@ -0,0 +1,37 @@
++// Architecture definition for LiteX based VexRiscV
++// (c) 2020 richard.prinz@min.at
++// See https://github.com/rprinz08/arty-s7-multinic
++
++#define dbg printf
++
++#include <string.h>
++#include <stdio.h>
++#include <stdint.h>
++#include "pico_mm.h"
++
++extern void *umm_calloc(size_t num, size_t size);
++extern void  umm_free(void *ptr);
++
++extern uint32_t ticks(void);
++extern uint32_t ticks_milliseconds(void);
++extern uint32_t ticks_seconds(void);
++
++#define pico_zalloc(x) umm_calloc(x, 1)
++#define pico_free(x) umm_free(x)
++
++static inline unsigned long PICO_TIME(void)
++{
++	return ticks_seconds();
++}
++
++static inline unsigned long PICO_TIME_MS(void)
++{
++	return ticks_milliseconds();
++}
++
++static inline void PICO_IDLE(void)
++{
++    unsigned long tick_now = ticks_milliseconds();
++    while(tick_now == ticks_milliseconds()) ;
++}
++
+diff --git a/include/pico_config.h b/include/pico_config.h
+index 31c875c7..bf394fe1 100644
+--- a/include/pico_config.h
++++ b/include/pico_config.h
+@@ -39,6 +39,7 @@
+ #       endif
+ #   endif
+ #endif
++#undef BYTESWAP_GCC
+ 
+ #ifdef PICO_BIGENDIAN
+ 
+@@ -228,6 +229,8 @@ static inline uint64_t long_long_be(uint64_t le)
+ #elif defined __KERNEL__
+ # include "arch/pico_linux.h"
+ /* #elif defined ... */
++#elif defined VEXRISCV
++# include "arch/pico_vexriscv.h"
+ #else
+ # include "arch/pico_posix.h"
+ #endif

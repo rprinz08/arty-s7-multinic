@@ -12,28 +12,31 @@
 #warning "CPU reset address was not defined! Using 0."
 #endif
 
+
 extern void boot_helper(unsigned int r1, unsigned int r2, unsigned int r3, unsigned int addr);
+
 
 #ifdef CSR_CTRL_BASE
 void reboot(void)
 {
-	ctrl_reset_write(1);
+    ctrl_reset_write(1);
 }
 #else
 void reboot(void)
 {
-	boot(0, 0, 0, CONFIG_CPU_RESET_ADDR);
+    boot(0, 0, 0, CONFIG_CPU_RESET_ADDR);
 }
 #endif
 
+
 void __attribute__((noreturn)) boot(unsigned int r1, unsigned int r2, unsigned int r3, unsigned int addr)
 {
-	printf("Booting program at 0x%x.\n", addr);
-	uart_sync();
-	irq_setmask(0);
-	irq_setie(0);
-	flush_cpu_icache();
-	boot_helper(r1, r2, r3, addr);
-	while(1);
+    printf("Booting program at 0x%x.\n", addr);
+    uart_sync();
+    irq_setmask(0);
+    irq_setie(0);
+    flush_cpu_icache();
+    boot_helper(r1, r2, r3, addr);
+    while(1);
 }
 

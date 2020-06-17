@@ -14,12 +14,12 @@
 #include <system.h>
 
 int main(void) {
-	irq_setmask(0);
-	irq_setie(1);
-	uart_init();
+    irq_setmask(0);
+    irq_setie(1);
+    uart_init();
 
-	wprintf("Hello firmware booting...\n");
+    wprintf("Hello firmware booting...\n");
 
-	return(42);
+    return(42);
 }
 

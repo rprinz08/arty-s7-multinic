@@ -206,27 +206,30 @@ Hello firmware booting...
 
 HELLO>
 ```
+
+## Firmware
+
 After board reset the embedded BIOS is started which performs some basic
 initalization and then tries to load the firmware via available peripherals.
 In this case first via serial port, then via SD-Card and last via Ethernet.
 It found the BOOT.BIN `hello` firmware on the SD-Card and loads it.
 
 ```
-HELLO>help
+HELLO >help
+
 Available commands:
-display value  - Display 8bit values on 7Segment display on PMOD-D
-reboot         - reboot CPU
-help           - this command
-HELLO>
-HELLO>display 128
-HELLO>
+hello value      - Returns value xor'ed with 0xff in FPGA
+time             - show current clock ticks
+uptime           - show system uptime in seconds
+random [runs]    - show random number generator values, default [500] runs
+malloc [runs]    - test UMM malloc, default [500] runs
+ping             - ping host (10.0.0.100) via network interface (eth0)
+reboot           - reboot CPU
+help             - this command
 ```
 
 The `hello` firmware just shows how to develop bare metal applications using
-console in- and output and accessing FPGA logic blocks like the seven segment
-display. The `display` command takes a decimal value between 0 and 255 and
-displays it's hex representation on the LED display. The `hello` command
-returns the entered value xor-ed with 0xff from the FPGA.
+console in- and output and accessing FPGA logic blocks. Details about the firmware can be found [here](doc/firmware.md).
 
 ## RMII notes
 Although there exists a OSCIN pin on the DP83848 PHY module which
@@ -270,7 +273,7 @@ box for the Arty-S7-50.
 * The latest LiteX Liteeth RMII and MAC implementation does not support multiple
 Ethernet interfaces due to limitations in clock domain handling and requires
 an explicit negative PHY reset (not directly available on the used PHY boards).
-Two simple patches to `liteeth/phy/rmii.py` and `liteeth/mac/core.phy` fixed this.
+A few patches to Liteeth fixes this.
 
 They can be found on github:
 * [Reset patch](https://github.com/rprinz08/liteeth/commit/6ac06a8423d326f111316909a07afba65db71fe0)
