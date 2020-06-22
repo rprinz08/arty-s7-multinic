@@ -5,18 +5,18 @@ show sample code.
 
 * Included is a sample on how to use [Configuration Status Registers (CSR)](https://github.com/enjoy-digital/litex/wiki/CSR-Bus) to talk to the FPGA from firmware. The `echo` sample sends a byte to the FPGA gateware where it is XOR'ed with 0xff and the result returned to the firmware which is then displayed on the serial console.
 
-* The `time` esample shows the free running CPU clock cycle ticker and
+* The `time` sample shows the free running CPU clock cycle ticker and
 derived millisecond subticker in FPGA. The later is used by the 
 network stack described below.
 
 * `uptime` shows the time elapsed since boot
 
 * A simple [Pseudo Random Number Generator PRNG](https://en.wikipedia.org/wiki/Pseudorandom_number_generator) is included in the gateware. 
-It is based on a [Linear Feedback Shift Register (LFSR)](https://en.wikipedia.org/wiki/Linear-feedback_shift_register) configured as [Pseudo Random Binary Sequence (PRBS31)](https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence). Its output can be shown with `random [runs]` and and optional value how many numbers to display (default 500).
+It is based on a [Linear Feedback Shift Register (LFSR)](https://en.wikipedia.org/wiki/Linear-feedback_shift_register) configured as [Pseudo Random Binary Sequence (PRBS31)](https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence). Its output can be shown with `random [runs]` and an optional value how many numbers to display (default 500).
 
 * The firmware includes the [umm_malloc Memory Manager](https://github.com/rhempel/umm_malloc) which enables dynamic memory allocations ([malloc, free](https://man7.org/linux/man-pages/man3/malloc.3.html)). The `malloc [runs]` command performs a simple test allocating an amount of memory, fill it with data, read it back, and compare the results. An optional value specifies how often this test should be performed (default 500).
 
-* PicoTCP is a very lightwight network stack which is included in the firmware. The demo `ping` command pings (IP4, ICMP) pings a target host. It is uses the first network interface. Configuration (Ethernet MAC address, IP4 address, netmask, ping target IP4 address and number of pings) can be found in `config.h`. The files `network.c` and `network_if.c` show how to initialize and use PicoTCP and how a device driver for LiteX Liteeth looks.
+* [PicoTCP](https://github.com/tass-belgium/picotcp) is a very lightwight network stack which is included in the firmware. The demo `ping` command pings (IP4, ICMP) a target host. It uses the first network interface. Configuration (Ethernet MAC address, IP4 address, netmask, ping target IP4 address and number of pings) can be found in `config.h`. The files `network.c` and `network_if.c` show how to initialize and use PicoTCP and how a device driver for LiteX Liteeth looks.
 
 The following log shows a sample run of the firmware:
 ```
