@@ -7,17 +7,19 @@ INCLUDE generated/regions.ld
 
 SECTIONS
 {
-    .fbi :
-    {
-        . = . + 8; /* Firmware Base Image format (len/crc) data comes first. */
-    } > user_flash
-
     .text :
     {
         _ftext = .;
+		*crt0*(.text)
+
+		/*
+		KEEP(*crt0*(.text))
+		KEEP(*(.text.isr))
+		*/
+
         *(.text .stub .text.* .gnu.linkonce.t.*)
         _etext = .;
-    } > user_flash
+    } > main_ram
 
     .rodata :
     {
@@ -25,19 +27,29 @@ SECTIONS
         _frodata = .;
         *(.rodata .rodata.* .gnu.linkonce.r.*)
         *(.rodata1)
-        _erodata = .;
-    } > user_flash
 
-    .data : AT (ADDR(.rodata) + SIZEOF (.rodata))
+		/*
+		*(.got .got.*)
+		*(.toc .toc.*)
+		FILL(0);
+		. = ALIGN(8);
+		*/
+
+        _erodata = .;
+    } > main_ram
+
+    .data :
     {
         . = ALIGN(4);
         _fdata = .;
         *(.data .data.* .gnu.linkonce.d.*)
         *(.data1)
+
         _gp = ALIGN(16);
         *(.sdata .sdata.* .gnu.linkonce.s.*)
-        _edata = ALIGN(16); /* Make sure _edata is >= _gp. */
-    } > sram
+
+        _edata = .;
+    } > main_ram
 
     .bss :
     {
@@ -56,4 +68,7 @@ SECTIONS
 }
 
 PROVIDE(_fstack = ORIGIN(sram) + LENGTH(sram) - 4);
+
+PROVIDE(_fdata_rom = LOADADDR(.data));
+PROVIDE(_edata_rom = LOADADDR(.data) + SIZEOF(.data));
 

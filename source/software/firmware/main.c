@@ -15,7 +15,6 @@
 #include "system.h"
 #include "network.h"
 #include "ci.h"
-#include "uptime.h"
 
 int main(void)
 {
@@ -32,7 +31,6 @@ int main(void)
 
     ci_prompt();
     while(1) {
-        uptime_service();
         ci_service();
         net_service();
     }

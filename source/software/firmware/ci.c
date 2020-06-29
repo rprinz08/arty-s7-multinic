@@ -132,7 +132,7 @@ void ci_service(void)
     }
     else
     if(strcmp(token, "uptime") == 0) {
-        uptime_print();
+        uptime();
         printf("\n");
     }
     else

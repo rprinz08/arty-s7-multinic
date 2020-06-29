@@ -70,11 +70,21 @@ _io = [
 
     # For digilent PMOD SD-Card on PMOD-D
     # https://store.digilentinc.com/pmod-microsd-microsd-card-slot/
+    #("spisdcard", 0,
+    #    Subsignal("clk", Pins("T12")),
+    #    Subsignal("cs_n", Pins("V15")),
+    #    Subsignal("mosi", Pins("U12")),
+    #    Subsignal("miso", Pins("V13")),
+    #    IOStandard("LVCMOS33")
+    #),
+
+    # For digilent PMOD SD-Card on Arty-S7-50-MultiNet shield
+    # https://store.digilentinc.com/pmod-microsd-microsd-card-slot/
     ("spisdcard", 0,
-        Subsignal("clk", Pins("T12")),
-        Subsignal("cs_n", Pins("V15")),
-        Subsignal("mosi", Pins("U12")),
-        Subsignal("miso", Pins("V13")),
+        Subsignal("clk", Pins("U12")),
+        Subsignal("cs_n", Pins("U15")),
+        Subsignal("mosi", Pins("V16")),
+        Subsignal("miso", Pins("V15")),
         IOStandard("LVCMOS33")
     ),
 

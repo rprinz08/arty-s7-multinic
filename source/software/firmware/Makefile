@@ -7,13 +7,8 @@ $(info ${ARCH})
 BUILD_DIRECTORY = $(BUILDINC_DIRECTORY)/..
 FIRMWARE_DIRECTORY=$(BUILD_DIRECTORY)/../../source/software/firmware
 
-ifeq ($(COPY_TO_MAIN_RAM), 1)
-CRT0 = $(BUILD_DIRECTORY)/libbase/crt0-ctr.o
-LINKER_LD = linker-ctr.ld
-else
-CRT0 = $(BUILD_DIRECTORY)/libbase/crt0-xip.o
-LINKER_LD = linker-xip.ld
-endif
+CRT0 = $(BUILD_DIRECTORY)/libbase/crt0.o
+LINKER_LD = linker.ld
 
 OBJECTS = \
 	boot-helper.o \

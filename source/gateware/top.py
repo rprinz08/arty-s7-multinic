@@ -76,6 +76,14 @@ class _CRG(Module):
 # BaseSoC ---------------------------------------------------------------------
 class BaseSoC(SoCCore):
     def __init__(self, sys_clk_freq=int(100e6), **kwargs):
+
+        # Timer ---------------------------------------------------------------
+        # If timer0 is enabled ensure that update timer is available also
+        if "with_timer" in kwargs:
+            with_timer = kwargs.get("with_timer")
+            if with_timer:
+                kwargs["timer_uptime"] = True
+
         self.platform = Platform
 
         # SoCCore -------------------------------------------------------------
@@ -126,7 +134,7 @@ class BaseSoC(SoCCore):
         #self.add_constant("FLASH_BOOT_ADDRESS", self.mem_map["spiflash"] + 0x800000)
 
         # SPI SD-Card ---------------------------------------------------------
-        self.add_spi_sdcard(name="spisdcard", clk_freq=400e3)
+        self.add_spi_sdcard(name="spisdcard", spi_clk_freq=400e3)
 
         # Hello World ---------------------------------------------------------
         self.submodules.hello = Hello()

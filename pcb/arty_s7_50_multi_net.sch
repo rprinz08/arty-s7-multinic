@@ -10371,27 +10371,27 @@ Wire Wire Line
 Wire Wire Line
 	600  5750 1450 5750
 Text Label 2400 2150 0    50   ~ 0
-PX1
+CS_N
 Text Label 2400 2250 0    50   ~ 0
-PX2
+MOSI
 Text Label 2400 3100 0    50   ~ 0
-PX3
+MISO
 Text Label 2400 3200 0    50   ~ 0
-PX4
+SCK
 Text Label 1400 3800 0    50   ~ 0
-PX5
+DAT1
 Text Label 1400 5250 0    50   ~ 0
-PX1
+CS_N
 Text Label 1400 5350 0    50   ~ 0
-PX2
+MOSI
 Text Label 1400 5450 0    50   ~ 0
-PX3
+MISO
 Text Label 1400 5550 0    50   ~ 0
-PX4
+SCK
 Wire Wire Line
 	2050 5250 2250 5250
 Text Label 2050 5250 0    50   ~ 0
-PX5
+DAT1
 Entry Wire Line
 	2250 5250 2350 5150
 Wire Bus Line
@@ -29355,6 +29355,8 @@ Connection ~ 8250 3450
 Wire Wire Line
 	9850 3450 10050 3450
 Connection ~ 9850 3450
+Wire Wire Line
+	3800 1400 3800 3450
 Wire Bus Line
 	10950 1900 10950 2300
 Wire Bus Line
@@ -29383,6 +29385,4 @@ Wire Bus Line
 	2200 3400 2200 4450
 Wire Bus Line
 	10950 2750 10950 4450
-Wire Wire Line
-	3800 1400 3800 3450
 $EndSCHEMATC

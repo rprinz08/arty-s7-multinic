@@ -83,6 +83,14 @@ if __name__ == "__main__":
             'flash', 'flash-sw',
             'conv']):
         soc_sdram_args(parser) # includes soc_core_args
+
+        # This is kinda hack: ensure that embedded rom is large
+        # enough (default 32kb, set here to 48kb)
+        while '--integrated-rom-size' in sys.argv:
+            sys.argv.remove('--integrated-rom-size')
+        sys.argv.append('--integrated-rom-size')
+        sys.argv.append('0xc000')
+
         vivado_build_args(parser)
 
     if 'build-sw' in sys.argv:
