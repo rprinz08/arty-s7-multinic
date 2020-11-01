@@ -187,6 +187,20 @@ _io = [
 		Subsignal("tx_data", Pins("R13 V14")),
 		Subsignal("tx_en", Pins("P13")),
 		IOStandard("LVCMOS33")
+	),
+
+	# Ethernet 3
+	("eth3_clocks", 0,
+		Subsignal("ref_clk", Pins("R14")),
+		IOStandard("LVCMOS33")
+	),
+	("eth3", 0,
+		# connected to MDIO bus of eth0
+		Subsignal("crs_dv", Pins("V13")),
+		Subsignal("rx_data", Pins("T12 T13")),
+		Subsignal("tx_data", Pins("T11 U11")),
+		Subsignal("tx_en", Pins("R11")),
+		IOStandard("LVCMOS33")
 	)
 ]
 

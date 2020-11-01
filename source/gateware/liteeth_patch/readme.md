@@ -6,7 +6,7 @@ this project.
 
 Apply patch with:
 ```
-patch -d /path/to/liteeth -p1 multi-rmii.patch
+patch -d /path/to/liteeth -p1 < multi-rmii.patch
 ```
 
 Detailed patch description can be found on github:
