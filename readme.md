@@ -1,4 +1,5 @@
 # Arty-S7-50, VexRiscV, Migen, LiteX, MulitNet
+
 This project describes how to build a soft-core RiscV based system with multiple
 Ethernet interfaces on a Digilent Arty-S7-50 with a Xilinx Spartan 7 FPGA using
 Python based Migen HDL and LiteX SoC builder.
@@ -24,18 +25,25 @@ Note: in the PCB version the Seven Segment Display was removed due to I/O limita
 More infos about this project can be found in the accompanying blog posts
 [here](https://www.min.at/prinz/?x=entry:entry200428-150015) and [here](https://www.min.at/prinz/?x=entry:entry200602-105212).
 
+
 ## Prerequisites
+
 To build the FPGA bitstream, the SoC BIOS and the sample bare metal demo
 application you need some prerequisites installed:
 
 * [Xilinx Vivado](https://www.xilinx.com/products/design-tools/vivado.html)
 * [Python >= 3.6](https://www.python.org/)
 * [LiteX](https://github.com/enjoy-digital/litex)
+  * Tested with git version (88bd754)
+* [Liteeth](https://github.com/enjoy-digital/liteeth)
+  * Tested with git version (d901027)
 * [RiscV compiler toolchain](https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.1.0-2019.01.0-x86_64-linux-ubuntu14.tar.gz)
 * [OpenOCD](http://openocd.org/)
 * [xc3sprog](https://sourceforge.net/projects/xc3sprog/) (optional)
 
+
 ## Building
+
 The included `make.py` script is responsible for building and loading/flashing.
 In addition a `Makefile` is used to handle dependencies and file changes.
 Assuming that all prerequisites are correctly installed using make:
@@ -92,7 +100,9 @@ bitsream second half for the firmware. The `make flash-sw` writes the
 
 *Note: Due to BIOS ROM size limitations the option to boot from SPI flash has been disabled. Booting the system is possible via SPI SD-Card, TFTP and serial.*
 
+
 ## Running
+
 Build and flash the FPGA bitstream:
 ```
 make
@@ -207,6 +217,12 @@ Hello firmware booting...
 HELLO>
 ```
 
+
+## Debugging
+
+A [Litescope](https://github.com/enjoy-digital/litescope) debugger is available via eth2 with configured IP address of **10.0.0.42**. The `debug` directory contains some scripts and samples on how to use it.
+
+
 ## Firmware
 
 After board reset the embedded BIOS is started which performs some basic
@@ -231,7 +247,9 @@ help             - this command
 The `hello` firmware just shows how to develop bare metal applications using
 console in- and output and accessing FPGA logic blocks. Details about the firmware can be found [here](doc/firmware.md).
 
+
 ## RMII notes
+
 Although there exists a OSCIN pin on the DP83848 PHY module which
 suggests a clock input, it is the output of the 50MHz oscillator
 available on the module. This oscillator directly clocks the DP83848
@@ -267,6 +285,7 @@ modules from outside via the OSCIN pin.
 
 
 ## Caveats
+
 Building the bitstream and loading it with xc3sprog did not work out of the
 box for the Arty-S7-50.
 

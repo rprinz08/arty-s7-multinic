@@ -18,12 +18,16 @@ from liteeth.phy.rmii import LiteEthPHYRMII
 from litex.soc.cores.spi_flash import *
 from litex.soc.cores.gpio import *
 
-# hello world sample
+# lite-scope debugger
+from litescope import LiteScopeAnalyzer
+
+# samples
 from gateware.hello import Hello
 from gateware.ticker import *
 from gateware.random import *
 
 # Platform---------------------------------------------------------------------
+# For xc3sprog programmer use 'xc3sprog'
 Platform = arty_s7.Platform(programmer='openocd')
 
 # Helpers ---------------------------------------------------------------------
@@ -169,12 +173,12 @@ class BaseSoC(SoCCore):
         self.add_constant("REMOTEIP3", 0)
         self.add_constant("REMOTEIP4", 100)
 
-        # Ethernet interface 0
-        # Naming this 'ethphy' and 'ethmac' enables BIOS TFTP boot
-        # functionality. This is disabled here by naming it 'ethphy0' and
-        # 'ethmac0' as BIOS size wont fit into bitstream ROM. If you want
-        # this functionality disable other functions like booting from
-        # SD card
+        # Ethernet interface 0 (used in bios for TFTP boot).
+        # Either remove 'name' attributes from ethphy and
+        # add_ethernet or explicitely name it "ethphy" and
+        # "ethmac" to be recognized by BIOS for tftp boot option.
+        # Also if this is the only interface in the system, you MUST
+        # remove the 'name' attribute from the phy otherwise build fails.
         self.submodules.ethphy = LiteEthPHYRMII(
             clock_pads = eth0_clock,
             pads       = self.platform.request("eth0"),
@@ -199,7 +203,8 @@ class BaseSoC(SoCCore):
             name="ethphy2",
             with_hw_init_reset=True, cd_name="eth2", no_clk_out=True)
         self.add_csr("ethphy2")
-        self.add_ethernet(name="ethmac2", phy=self.ethphy2)
+        # Disabled becaused used for etherbone down below
+        #self.add_ethernet(name="ethmac2", phy=self.ethphy2)
 
         # ticker --------------------------------------------------------------
         self.submodules.ticker = Ticker(CLK_FRQ_HZ=sys_clk_freq)
@@ -208,4 +213,30 @@ class BaseSoC(SoCCore):
         # random --------------------------------------------------------------
         self.submodules.random = Random()
         self.csr.add("random")
+
+        # lite-scope debugger -------------------------------------------------
+        self.add_etherbone(
+            phy         = self.ethphy2,
+            ip_address  = "10.0.0.42",
+            mac_address = 0x10e2d5000001,
+            udp_port    = 4711
+        )
+
+        # CPU signals
+        analyzer_signals = [
+            self.cpu.ibus.stb,
+            self.cpu.ibus.cyc,
+            self.cpu.ibus.adr,
+            self.cpu.ibus.we,
+            self.cpu.ibus.ack,
+            self.cpu.ibus.sel,
+            self.cpu.ibus.dat_w,
+            self.cpu.ibus.dat_r
+        ]
+
+        self.submodules.analyzer = LiteScopeAnalyzer(analyzer_signals,
+            depth        = 512,
+            clock_domain = "sys",
+            csr_csv      = "analyzer.csv")
+        self.add_csr("analyzer")
 

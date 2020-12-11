@@ -12,4 +12,5 @@ __pycache__
 *.bak
 *-bak
 build
+analyzer.csv
 

@@ -16,6 +16,7 @@ IDENTIFIER="Arty-S7 RISC64 v1.0"
 IDENTIFIER_VER=true
 
 CSR_JSON=$(BUILD_PATH)/csr.json
+CSR_CSV=$(BUILD_PATH)/csr.csv
 
 DEV = "/dev/ttyUSB1"
 UART_BAUD=115200
@@ -33,7 +34,8 @@ $(BITSTREAM): $(GATEWARE_SOURCE_PATH)/*.py
 		--ident $(IDENTIFIER) \
 		--ident-version $(IDENTIFIER_VER) \
 		--uart-baudrate $(UART_BAUD) \
-		--csr-json $(CSR_JSON)
+		--csr-json $(CSR_JSON) \
+		--csr-csv $(CSR_CSV)
 
 build-sw:
 	@./make.py build-sw \
@@ -45,7 +47,8 @@ build-sw:
 		--software-dir $(SOFTWARE_BUILD_PATH) \
 		--ident $(IDENTIFIER) \
 		--ident-version $(IDENTIFIER_VER) \
-		--csr-json $(CSR_JSON)
+		--csr-json $(CSR_JSON) \
+		--csr-csv $(CSR_CSV)
 
 build-fpga:
 	@./make.py build-sw \
@@ -57,7 +60,8 @@ build-fpga:
 		--software-dir $(SOFTWARE_BUILD_PATH) \
 		--ident $(IDENTIFIER) \
 		--ident-version $(IDENTIFIER_VER) \
-		--csr-json $(CSR_JSON)
+		--csr-json $(CSR_JSON) \
+		--csr-csv $(CSR_CSV)
 
 conv:
 	@./make.py conv \
@@ -69,10 +73,12 @@ conv:
 		--software-dir $(SOFTWARE_BUILD_PATH) \
 		--ident $(IDENTIFIER) \
 		--ident-version $(IDENTIFIER_VER) \
-		--csr-json $(CSR_JSON)
+		--csr-json $(CSR_JSON) \
+		--csr-csv $(CSR_CSV)
 
 load: $(BITSTREAM)
 	@./make.py load \
+		--build_name $(BUILD_NAME) \
 		--output-dir $(BUILD_PATH) \
 		--gateware-dir $(GATEWARE_BUILD_PATH) \
 		--software-dir $(SOFTWARE_BUILD_PATH)
