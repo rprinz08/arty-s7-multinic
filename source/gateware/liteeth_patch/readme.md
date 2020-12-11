@@ -1,12 +1,13 @@
 ## LiteX Liteeth patches
 
-This directory contains a patch for LiteX Liteeth which
+This directory contains patches for LiteX and Liteeth which
 supports multiple RMII PHYs with their own clocks as used in
-this project.
+this project (including etherbone support).
 
-Apply patch with:
+Apply patches with:
 ```
-patch -d /path/to/liteeth -p1 < multi-rmii.patch
+patch -d /path/to/liteeth -p1 < liteeth.patch
+patch -d /path/to/litex -p1 < litex.patch
 ```
 
 Detailed patch description can be found on github:

@@ -1,0 +1,16 @@
+diff --git a/litex/soc/integration/soc.py b/litex/soc/integration/soc.py
+index 92744b9f..29e2e734 100644
+--- a/litex/soc/integration/soc.py
++++ b/litex/soc/integration/soc.py
+@@ -1367,7 +1367,10 @@ class LiteXSoC(SoC):
+             mac_address = mac_address,
+             ip_address  = ip_address,
+             clk_freq    = self.clk_freq)
+-        ethcore = ClockDomainsRenamer("eth_tx")(ethcore)
++        tx_cd_name = "eth_tx"
++        if hasattr(phy, "name"):
++            tx_cd_name = phy.name + "_" + tx_cd_name
++        ethcore = ClockDomainsRenamer(tx_cd_name)(ethcore)
+         self.submodules.ethcore = ethcore
+ 
+         # Clock domain renaming
