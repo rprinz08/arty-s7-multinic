@@ -3,7 +3,6 @@
 from litex import RemoteClient
 
 wb = RemoteClient(host="localhost", port=1234, csr_csv="../build/csr.csv", debug=True)
-#wb = RemoteClient()
 wb.open()
 
 # # #
