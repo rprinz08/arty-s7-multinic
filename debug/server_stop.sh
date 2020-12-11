@@ -25,4 +25,3 @@ PID=$(<"$PIDF")
 kill -9 $PID
 
 rm -f $PIDF
-

@@ -23,8 +23,6 @@ if (( $EUID != 0 )); then
     fi
 fi
 
-source /home/prinz/projects/processors/HDL/bin/litex/setenv.sh
-
 DEBUG=--debug
 if [ "$1x" == "fgx" ]; then
 	litex_server.py \
@@ -37,4 +35,3 @@ else
 		>$LOGF 2>&1 </dev/null &
 	echo $! > $PIDF
 fi
-
