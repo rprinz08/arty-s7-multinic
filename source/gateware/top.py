@@ -46,15 +46,17 @@ def platform_request_all(platform, name):
 # CRG -------------------------------------------------------------------------
 class _CRG(Module):
     def __init__(self, platform, sys_clk_freq,
-                 eth0_clock, eth1_clock, eth2_clock):
+                 eth0_clock, eth1_clock, eth2_clock, eth3_clock):
         self.clock_domains.cd_sys       = ClockDomain()
         self.clock_domains.cd_sys2x     = ClockDomain(reset_less=True)
         self.clock_domains.cd_sys4x     = ClockDomain(reset_less=True)
         self.clock_domains.cd_sys4x_dqs = ClockDomain(reset_less=True)
         self.clock_domains.cd_clk200    = ClockDomain()
+
         self.clock_domains.cd_eth0      = ClockDomain()
         self.clock_domains.cd_eth1      = ClockDomain()
         self.clock_domains.cd_eth2      = ClockDomain()
+        self.clock_domains.cd_eth3      = ClockDomain()
 
         # # #
 
@@ -74,6 +76,7 @@ class _CRG(Module):
         self.comb += self.cd_eth0.clk.eq(eth0_clock.ref_clk)
         self.comb += self.cd_eth1.clk.eq(eth1_clock.ref_clk)
         self.comb += self.cd_eth2.clk.eq(eth2_clock.ref_clk)
+        self.comb += self.cd_eth3.clk.eq(eth3_clock.ref_clk)
 
         self.submodules.idelayctrl = S7IDELAYCTRL(self.cd_clk200)
 
@@ -98,11 +101,13 @@ class BaseSoC(SoCCore):
         #}}
 
         # CRG -----------------------------------------------------------------
-        eth0_clock = self.platform.request("eth0_clocks")
-        eth1_clock = self.platform.request("eth1_clocks")
-        eth2_clock = self.platform.request("eth2_clocks")
+        eth0_clock = self.platform.request("eth_clocks", 0)
+        eth1_clock = self.platform.request("eth_clocks", 1)
+        eth2_clock = self.platform.request("eth_clocks", 2)
+        eth3_clock = self.platform.request("eth_clocks", 3)
         self.submodules.crg = _CRG(self.platform, sys_clk_freq,
-                                   eth0_clock, eth1_clock, eth2_clock)
+                                   eth0_clock, eth1_clock,
+                                   eth2_clock, eth3_clock)
 
         # DDR3 SDRAM ----------------------------------------------------------
         if not self.integrated_main_ram_size:
@@ -173,38 +178,43 @@ class BaseSoC(SoCCore):
         self.add_constant("REMOTEIP3", 0)
         self.add_constant("REMOTEIP4", 100)
 
-        # Ethernet interface 0 (used in bios for TFTP boot).
-        # Either remove 'name' attributes from ethphy and
-        # add_ethernet or explicitely name it "ethphy" and
-        # "ethmac" to be recognized by BIOS for tftp boot option.
-        # Also if this is the only interface in the system, you MUST
-        # remove the 'name' attribute from the phy otherwise build fails.
+        # Ethernet interface 0 (used for TFTP boot).
+        # Name it "ethphy" and "ethmac" to be recognized by
+        # BIOS for tftp boot option. Also if it is the only
+        # interface in the system you MUST remove the 'phy_cd'
+        # attribute from add_ethernet (or set it to "eth") otherwise
+        # build fails.
         self.submodules.ethphy = LiteEthPHYRMII(
             clock_pads = eth0_clock,
-            pads       = self.platform.request("eth0"),
-            name="ethphy",
-            with_hw_init_reset=True, cd_name="eth0", no_clk_out=True)
+            pads       = self.platform.request("eth", 0),
+            with_hw_init_reset=True, no_clk_out=True, clock_cd="eth0")
         self.add_csr("ethphy")
-        self.add_ethernet(name="ethmac", phy=self.ethphy)
+        self.add_ethernet(name="ethmac", phy=self.ethphy, phy_cd="ethphy_eth")
 
         # Ethernet interface 1
         self.submodules.ethphy1 = LiteEthPHYRMII(
             clock_pads = eth1_clock,
-            pads       = self.platform.request("eth1"),
-            name="ethphy1",
-            with_hw_init_reset=True, cd_name="eth1", no_clk_out=True)
+            pads       = self.platform.request("eth", 1),
+            with_hw_init_reset=True, no_clk_out=True, clock_cd="eth1")
         self.add_csr("ethphy1")
-        self.add_ethernet(name="ethmac1", phy=self.ethphy1)
+        self.add_ethernet(name="ethmac1", phy=self.ethphy1, phy_cd="ethphy1_eth")
 
         # Ethernet interface 2
         self.submodules.ethphy2 = LiteEthPHYRMII(
             clock_pads = eth2_clock,
-            pads       = self.platform.request("eth2"),
-            name="ethphy2",
-            with_hw_init_reset=True, cd_name="eth2", no_clk_out=True)
+            pads       = self.platform.request("eth", 2),
+            with_hw_init_reset=True, no_clk_out=True, clock_cd="eth2")
         self.add_csr("ethphy2")
         # Disabled becaused used for etherbone down below
-        #self.add_ethernet(name="ethmac2", phy=self.ethphy2)
+        #self.add_ethernet(name="ethmac2", phy=self.ethphy2, phy_cd="ethphy2_eth")
+
+        # Ethernet interface 3
+        self.submodules.ethphy3 = LiteEthPHYRMII(
+            clock_pads = eth3_clock,
+            pads       = self.platform.request("eth", 3),
+            with_hw_init_reset=True, no_clk_out=True, clock_cd="eth3")
+        self.add_csr("ethphy3")
+        self.add_ethernet(name="ethmac3", phy=self.ethphy3, phy_cd="ethphy3_eth")
 
         # ticker --------------------------------------------------------------
         self.submodules.ticker = Ticker(CLK_FRQ_HZ=sys_clk_freq)
@@ -217,6 +227,7 @@ class BaseSoC(SoCCore):
         # lite-scope debugger -------------------------------------------------
         self.add_etherbone(
             phy         = self.ethphy2,
+            phy_cd      = "ethphy2_eth",
             ip_address  = "10.0.0.42",
             mac_address = 0x10e2d5000001,
             udp_port    = 4711

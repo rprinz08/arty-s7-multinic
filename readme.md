@@ -7,7 +7,7 @@ Python based Migen HDL and LiteX SoC builder.
 Prototype of the project
 ![](doc/fpga_net_1_l.jpg)
 
-More evolved version with up to four Ethernet interfaces and a PCB. The [KiCad](https://kicad-pcb.org/) project files are included in this repository. 
+More evolved version with up to four Ethernet interfaces and a PCB. The [KiCad](https://kicad-pcb.org/) project files are included in this repository.
 ![](doc/arty_s7_50_multi_net.jpg)
 
 ![](doc/arty_s7_50_multi_net_pcbs.jpg)
@@ -34,9 +34,9 @@ application you need some prerequisites installed:
 * [Xilinx Vivado](https://www.xilinx.com/products/design-tools/vivado.html)
 * [Python >= 3.6](https://www.python.org/)
 * [LiteX](https://github.com/enjoy-digital/litex)
-  * Tested with git version (88bd754)
+  * Tested with git version (1a338b6)
 * [Liteeth](https://github.com/enjoy-digital/liteeth)
-  * Tested with git version (d901027)
+  * Tested with git version (617400f)
 * [RiscV compiler toolchain](https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.1.0-2019.01.0-x86_64-linux-ubuntu14.tar.gz)
 * [OpenOCD](http://openocd.org/)
 * [xc3sprog](https://sourceforge.net/projects/xc3sprog/) (optional)
@@ -289,15 +289,9 @@ modules from outside via the OSCIN pin.
 Building the bitstream and loading it with xc3sprog did not work out of the
 box for the Arty-S7-50.
 
-* The latest LiteX Liteeth RMII and MAC implementation does not support multiple
-Ethernet interfaces due to limitations in clock domain handling and requires
-an explicit negative PHY reset (not directly available on the used PHY boards).
-A few patches to Liteeth fixes this.
-
-They can be found on github:
-* [Reset patch](https://github.com/rprinz08/liteeth/commit/6ac06a8423d326f111316909a07afba65db71fe0)
-* [Multy RMII PHY patch](https://github.com/rprinz08/liteeth/commit/ed355c5aae09e2234098910da4ee220956210371)
-* [Control clock output](https://github.com/rprinz08/liteeth/commit/66660f6931ec5b08ce531ed030829e0ba198311a)
+The tested LiteX and Liteeth versions (see 'Prerequisites' above) do not completely support multiple
+Ethernet RMIIs with external clocks so some patches are needed to fix this.
+More information can be found [here](source/gateware/patches/readme.md).
 
 Also `xc3sprog` did not support the Xilinx Spartan-7 chip used on the
 Arty-S7-50. For this to work another patch was developed. Simple get the source
