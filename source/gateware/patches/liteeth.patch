@@ -1,5 +1,5 @@
 diff --git a/liteeth/phy/rmii.py b/liteeth/phy/rmii.py
-index 679b8ce..d38248f 100644
+index 679b8ce..a87242d 100644
 --- a/liteeth/phy/rmii.py
 +++ b/liteeth/phy/rmii.py
 @@ -93,7 +93,8 @@ class LiteEthPHYRMIIRX(Module):
@@ -12,7 +12,7 @@ index 679b8ce..d38248f 100644
          self._reset = CSRStorage()
  
          # # #
-@@ -102,10 +103,12 @@ class LiteEthPHYRMIICRG(Module, AutoCSR):
+@@ -102,10 +103,13 @@ class LiteEthPHYRMIICRG(Module, AutoCSR):
          self.clock_domains.cd_eth_rx = ClockDomain()
          self.clock_domains.cd_eth_tx = ClockDomain()
          self.comb += [
@@ -24,11 +24,12 @@ index 679b8ce..d38248f 100644
 -        self.specials += DDROutput(0, 1, clock_pads.ref_clk, ClockSignal("eth_tx"))
 +
 +        if not no_clk_out:
-+            self.specials += DDROutput(0, 1, clock_pads.ref_clk, ClockSignal("eth_tx"))
++            self.specials += DDROutput(0, 1, clock_pads.ref_clk,
++                                       ClockSignal(clock_cd + "_tx"))
  
          # Reset
          self.reset = reset = Signal()
-@@ -126,8 +129,11 @@ class LiteEthPHYRMII(Module, AutoCSR):
+@@ -126,8 +130,11 @@ class LiteEthPHYRMII(Module, AutoCSR):
      dw          = 8
      tx_clk_freq = 50e6
      rx_clk_freq = 50e6
