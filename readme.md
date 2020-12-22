@@ -291,7 +291,7 @@ box for the Arty-S7-50.
 
 The tested LiteX and Liteeth versions (see 'Prerequisites' above) do not completely support multiple
 Ethernet RMIIs with external clocks so some patches are needed to fix this.
-More information can be found [here](source/gateware/patches/readme.md).
+More information can be found [here](source/gateware/patches).
 
 Also `xc3sprog` did not support the Xilinx Spartan-7 chip used on the
 Arty-S7-50. For this to work another patch was developed. Simple get the source
