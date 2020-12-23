@@ -101,10 +101,10 @@ class BaseSoC(SoCCore):
         #}}
 
         # CRG -----------------------------------------------------------------
-        eth0_clock = self.platform.request("eth_clocks", 0)
-        eth1_clock = self.platform.request("eth_clocks", 1)
-        eth2_clock = self.platform.request("eth_clocks", 2)
-        eth3_clock = self.platform.request("eth_clocks", 3)
+        eth0_clock = self.platform.request("eth_clocks_ext", 0)
+        eth1_clock = self.platform.request("eth_clocks_ext", 1)
+        eth2_clock = self.platform.request("eth_clocks_ext", 2)
+        eth3_clock = self.platform.request("eth_clocks_ext", 3)
         self.submodules.crg = _CRG(self.platform, sys_clk_freq,
                                    eth0_clock, eth1_clock,
                                    eth2_clock, eth3_clock)
@@ -183,38 +183,40 @@ class BaseSoC(SoCCore):
         # BIOS for tftp boot option. Also if it is the only
         # interface in the system you MUST remove the 'phy_cd'
         # attribute from add_ethernet (or set it to "eth") otherwise
-        # build fails.
+        # build fails. When using external ref_clock set clock_pads
+        # to None and provide a clock domain name for the external
+        # clock via refclk_cd.
         self.submodules.ethphy = LiteEthPHYRMII(
-            clock_pads = eth0_clock,
+            clock_pads = None,
             pads       = self.platform.request("eth", 0),
-            with_hw_init_reset=True, no_clk_out=True, clock_cd="eth0")
+            with_hw_init_reset=True, refclk_cd="eth0")
         self.add_csr("ethphy")
         self.add_ethernet(name="ethmac", phy=self.ethphy, phy_cd="ethphy_eth")
 
         # Ethernet interface 1
         self.submodules.ethphy1 = LiteEthPHYRMII(
-            clock_pads = eth1_clock,
+            clock_pads = None,
             pads       = self.platform.request("eth", 1),
-            with_hw_init_reset=True, no_clk_out=True, clock_cd="eth1")
+            with_hw_init_reset=True, refclk_cd="eth1")
         self.add_csr("ethphy1")
         self.add_ethernet(name="ethmac1", phy=self.ethphy1, phy_cd="ethphy1_eth")
 
         # Ethernet interface 2
         self.submodules.ethphy2 = LiteEthPHYRMII(
-            clock_pads = eth2_clock,
+            clock_pads = None,
             pads       = self.platform.request("eth", 2),
-            with_hw_init_reset=True, no_clk_out=True, clock_cd="eth2")
+            with_hw_init_reset=True, refclk_cd="eth2")
         self.add_csr("ethphy2")
-        # Disabled becaused used for etherbone down below
-        #self.add_ethernet(name="ethmac2", phy=self.ethphy2, phy_cd="ethphy2_eth")
+        self.add_ethernet(name="ethmac2", phy=self.ethphy2, phy_cd="ethphy2_eth")
 
         # Ethernet interface 3
         self.submodules.ethphy3 = LiteEthPHYRMII(
-            clock_pads = eth3_clock,
+            clock_pads = None,
             pads       = self.platform.request("eth", 3),
-            with_hw_init_reset=True, no_clk_out=True, clock_cd="eth3")
+            with_hw_init_reset=True, refclk_cd="eth3")
         self.add_csr("ethphy3")
-        self.add_ethernet(name="ethmac3", phy=self.ethphy3, phy_cd="ethphy3_eth")
+        # Disabled becaused used for etherbone down below
+        #self.add_ethernet(name="ethmac3", phy=self.ethphy3, phy_cd="ethphy3_eth")
 
         # ticker --------------------------------------------------------------
         self.submodules.ticker = Ticker(CLK_FRQ_HZ=sys_clk_freq)
@@ -226,8 +228,8 @@ class BaseSoC(SoCCore):
 
         # lite-scope debugger -------------------------------------------------
         self.add_etherbone(
-            phy         = self.ethphy2,
-            phy_cd      = "ethphy2_eth",
+            phy         = self.ethphy3,
+            phy_cd      = "ethphy3_eth",
             ip_address  = "10.0.0.42",
             mac_address = 0x10e2d5000001,
             udp_port    = 4711

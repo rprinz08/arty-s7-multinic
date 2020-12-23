@@ -25,11 +25,11 @@ fi
 
 DEBUG=--debug
 if [ "$1x" == "fgx" ]; then
-	litex_server.py \
+	litex_server \
 		$DEBUG \
 		--udp --udp-ip=$TARGET_IP --udp-port=$TARGET_PORT
 else
-	litex_server.py \
+	litex_server \
 		$DEBUG \
 		--udp --udp-ip=$TARGET_IP --udp-port=$TARGET_PORT \
 		>$LOGF 2>&1 </dev/null &

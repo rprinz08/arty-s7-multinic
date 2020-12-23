@@ -34,13 +34,14 @@ application you need some prerequisites installed:
 * [Xilinx Vivado](https://www.xilinx.com/products/design-tools/vivado.html)
 * [Python >= 3.6](https://www.python.org/)
 * [LiteX](https://github.com/enjoy-digital/litex)
-  * Tested with git version (1a338b6)
+  * Tested with git version (bddb170)
 * [Liteeth](https://github.com/enjoy-digital/liteeth)
-  * Tested with git version (617400f)
+  * Tested with git version (dea3590)
 * [RiscV compiler toolchain](https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.1.0-2019.01.0-x86_64-linux-ubuntu14.tar.gz)
 * [OpenOCD](http://openocd.org/)
 * [xc3sprog](https://sourceforge.net/projects/xc3sprog/) (optional)
 
+*Note: As of LiteX version (bddb170) and Liteeth version (dea3590) no patches are needed for multiple ethernet support. If you use an older version you can find patches in the history.*
 
 ## Building
 
@@ -258,15 +259,11 @@ output.
 
 The default LiteX Liteeth RMII MAC operates with the clock of a 50MHz
 PLL it instantiates assuming that it must provide the clock to the
-PHY. As the PHY modules use their own oscillator a patch was
-needed to control (disable) the creation of a clock (see Caveats below).
+PHY. As the PHY modules use their own oscillator the corresponding clock pads are set to Null in the code so that the external clock will be used.
 
 To synchronize the MAC with the PHY the PHYs clock can be
 used as input to the MAC instead of the default 50MHz PLL clock
-output. It would even be possible to clock the MAC with its internal,
-and the PHY with its own clock and, as long as both clocks do not
-differ too much it will work. But more reliable would be synced
-clocks.
+output. 
 
 On Xilinx Spartan7 FPGAs only the positive (P) version of clock
 capable (CC) pins can be used as they are internally special wired
@@ -284,25 +281,6 @@ modules from outside via the OSCIN pin.
 ![x](doc/dp83848-1.jpg)
 
 
-## Caveats
-
-Building the bitstream and loading it with xc3sprog did not work out of the
-box for the Arty-S7-50.
-
-The tested LiteX and Liteeth versions (see 'Prerequisites' above) do not completely support multiple
-Ethernet RMIIs with external clocks so some patches are needed to fix this.
-More information can be found [here](source/gateware/patches).
-
-Also `xc3sprog` did not support the Xilinx Spartan-7 chip used on the
-Arty-S7-50. For this to work another patch was developed. Simple get the source
-from [here](https://sourceforge.net/projects/xc3sprog/) and add the following line
-to the file `devlist.txt`:
-```
-0362f093      6    0x09 XC7S50
-```
-Then rebuild `xc3sprog` which now can be used to program the Arty-S7-50.
-
-**Note: the project now uses [OpenOCD](http://openocd.org/) for programming.**
 
 More infos about this project can be found in the accompanying blog posts
 [here](https://www.min.at/prinz/?x=entry:entry200428-150015) and [here](https://www.min.at/prinz/?x=entry:entry200602-105212).

@@ -146,7 +146,7 @@ _io = [
         IOStandard("LVCMOS33")),
 
 	# Ethernet 0
-	("eth_clocks", 0,
+	("eth_clocks_ext", 0,
 		Subsignal("ref_clk", Pins("R16")),
 		IOStandard("LVCMOS33"),
 	),
@@ -162,7 +162,7 @@ _io = [
 	),
 
 	# Ethernet 1
-	("eth_clocks", 1,
+	("eth_clocks_ext", 1,
 		Subsignal("ref_clk", Pins("G16")),
 		IOStandard("LVCMOS33"),
 	),
@@ -176,7 +176,7 @@ _io = [
 	),
 
 	# Ethernet 2
-	("eth_clocks", 2,
+	("eth_clocks_ext", 2,
 		Subsignal("ref_clk", Pins("D14")),
 		IOStandard("LVCMOS33")
 	),
@@ -190,7 +190,7 @@ _io = [
 	),
 
 	# Ethernet 3
-	("eth_clocks", 3,
+	("eth_clocks_ext", 3,
 		Subsignal("ref_clk", Pins("R14")),
 		IOStandard("LVCMOS33")
 	),
